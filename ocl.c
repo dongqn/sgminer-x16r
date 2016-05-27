@@ -39,6 +39,7 @@
 #include "algorithm/yescrypt.h"
 #include "algorithm/lyra2rev2.h"
 #include "algorithm/equihash.h"
+#include "algorithm/evocoin.h"
 
 /* FIXME: only here for global config vars, replace with configuration.h
  * or similar as soon as config is in a struct instead of littered all
@@ -238,7 +239,7 @@ static void set_threads_hashes(unsigned int vectors, unsigned int compute_shader
   *globalThreads = threads;
 }
 
-_clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *algorithm)
+_clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *algorithm, struct thr_info *thr)
 {
   cl_int status = 0;
   size_t compute_units = 0;
@@ -764,6 +765,27 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
     strcat(build_data->binary_filename, "g");
   }
 
+
+  applog(LOG_DEBUG, "Revolver Test1");
+  char x11EvoCode[12];
+  x11EvoCode[0] = 0;
+
+  if (cgpu->algorithm.type == ALGO_X11EVO) {
+	  applog(LOG_DEBUG, "Revolver Test2");
+	  char algoSuffixCode[100];
+	  char *ntime = "00000000";
+	  if (thr && thr->work) {
+		  ntime = thr->work->pool->swork.ntime;
+	  }
+	  applog(LOG_DEBUG, "Revolver Test4 ntime=%s", ntime);
+
+	  // 11 algos + 0 (end-string)
+	  char code[12];
+	  evocoin_twisted_code(algoSuffixCode, ntime, x11EvoCode);
+	  strcat(build_data->binary_filename, algoSuffixCode);
+  }
+  applog(LOG_DEBUG, "Revolver Test3");
+
   set_base_compiler_options(build_data);
   if (algorithm->set_compile_options) {
     algorithm->set_compile_options(build_data, cgpu, algorithm);
@@ -776,7 +798,11 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
   if (!(clState->program = load_opencl_binary_kernel(build_data))) {
     applog(LOG_NOTICE, "Building binary %s", build_data->binary_filename);
 
+<<<<<<< HEAD
     if (!(clState->program = build_opencl_kernel(build_data, filename))) {
+=======
+    if (!(clState->program = build_opencl_kernel(build_data, filename, x11EvoCode)))
+>>>>>>> 194dfc1... Added X11Evo support
       return NULL;
     }
 
@@ -826,7 +852,7 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
     snprintf(buffer, sizeof(buffer), "buffer2");
     if (status != CL_SUCCESS)
       goto out;
-    clState->buffer3 = clCreateBuffer(clState->context, CL_MEM_READ_WRITE, RC_SIZE, NULL, &status); 
+    clState->buffer3 = clCreateBuffer(clState->context, CL_MEM_READ_WRITE, RC_SIZE, NULL, &status);
     snprintf(buffer, sizeof(buffer), "buffer3");
     if (status != CL_SUCCESS)
       goto out;
@@ -894,7 +920,7 @@ out:
       applog(LOG_ERR, "Error %d: Creating Kernel from program. (clCreateKernel)", status);
       return NULL;
     }
-  
+
     clState->n_extra_kernels = algorithm->n_extra_kernels;
     if (clState->n_extra_kernels > 0) {
       unsigned int i;
@@ -912,7 +938,7 @@ out:
       }
     }
   }
-    
+
 
   if (algorithm->type == ALGO_ETHASH) {
     clState->GenerateDAG = clCreateKernel(clState->program, "GenerateDAG", &status);
@@ -1059,7 +1085,7 @@ out:
       return NULL;
     }
   }
-  
+
   if (algorithm->type == ALGO_CRYPTONIGHT) {
     size_t GlobalThreads;
     readbufsize = 128UL;
@@ -1089,7 +1115,7 @@ out:
       return NULL;
     }
   }
-  
+
   applog(LOG_DEBUG, "Using read buffer sized %lu", (unsigned long)readbufsize);
   clState->CLbuffer0 = clCreateBuffer(clState->context, CL_MEM_READ_ONLY, readbufsize, NULL, &status);
   if (status != CL_SUCCESS) {
@@ -1109,4 +1135,3 @@ out:
 
   return clState;
 }
-

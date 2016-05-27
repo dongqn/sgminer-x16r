@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "build_kernel.h"
+#include "patch_kernel.h"
 #include "miner.h"
 
 static char *file_contents(const char *filename, int *length)
@@ -61,7 +62,7 @@ void set_base_compiler_options(build_kernel_data *data)
 
   sprintf(buf, "w%dl%d", (int)data->work_size, (int)sizeof(long));
   strcat(data->binary_filename, buf);
-  
+
   if (data->kernel_path) {
     strcat(data->compiler_options, " -I \"");
     strcat(data->compiler_options, data->kernel_path);
@@ -72,10 +73,125 @@ void set_base_compiler_options(build_kernel_data *data)
     strcat(data->compiler_options, " -D OCL1");
 }
 
-cl_program build_opencl_kernel(build_kernel_data *data, const char *filename)
+bool needs_bfi_patch(build_kernel_data *data)
+{
+  if (data->has_bit_align &&
+      (data->opencl_version < 1.2) &&
+        (strstr(data->platform, "Cedar") ||
+         strstr(data->platform, "Redwood") ||
+         strstr(data->platform, "Juniper") ||
+         strstr(data->platform, "Cypress" ) ||
+         strstr(data->platform, "Hemlock" ) ||
+         strstr(data->platform, "Caicos" ) ||
+         strstr(data->platform, "Turks" ) ||
+         strstr(data->platform, "Barts" ) ||
+         strstr(data->platform, "Cayman" ) ||
+         strstr(data->platform, "Antilles" ) ||
+         strstr(data->platform, "Wrestler" ) ||
+         strstr(data->platform, "Zacate" ) ||
+         strstr(data->platform, "WinterPark" )))
+    return true;
+  else
+    return false;
+}
+
+
+typedef struct _algorithm_get_settings_t {
+	const char *algo;
+	bool inverter;
+	bool req_inverted; // inverted is 1
+} algorithm_get_settings_t;
+
+static algorithm_get_settings_t algo[] = {
+	{"x11evo_blake.cl",		true,	false },
+	{"x11evo_bmw.cl",		false,	true },
+	{"x11evo_groestl.cl",	false,	true },
+	{"x11evo_skein.cl",		false,	true },
+	{"x11evo_jh.cl",		false,	true },
+	{"x11evo_keccak.cl",	false,	true },
+	{"x11evo_luffa.cl",		false,	true },
+	{"x11evo_cubehash.cl",	true,	true },
+	{"x11evo_shavite.cl",	false,	false },
+	{"x11evo_simd.cl",		false,	false },
+	{"x11evo_echo.cl",		false,	false }
+};
+
+
+char *generateSource(const char *code)
+{
+
+	char *result;
+	result = (char *)malloc(65535);
+
+  int pl;
+	char *source;
+	char path[255];
+
+	strcpy(path, "x11evo/x11evo_header.cl");
+	source	= file_contents(path, &pl);
+	strcpy	(result, source);
+	if (source) free(source);
+
+	// start from non-inverted signal
+	bool curState = false;
+	int i;
+	for (i = 0; i < strlen(code); i++) {
+
+		// extract index
+		char elem = code[i];
+		uint8_t idx;
+		if (elem >= 'A')
+			idx = elem - 'A' + 10;
+		else
+			idx = elem - '0';
+
+		// calc swap requirements
+		if (curState != algo[idx].req_inverted) {
+
+			// insert swap
+			strcat(result, "\nSWAP_RESULT;\n");
+
+			curState = !curState;
+		}
+
+		if (algo[idx].inverter) {
+			curState = !curState;
+		}
+
+		strcpy(path, "x11evo/");
+		strcat(path, algo[idx].algo);
+
+		source = file_contents(path, &pl);
+		strcat(result, source);
+
+		if (source) free(source);
+	}
+
+	// check final state
+	if (curState) {
+		strcat(result, "\nSWAP_RESULT;\n");
+	}
+
+	strcpy(path, "x11evo/x11evo_footer.cl");
+	source = file_contents(path, &pl);
+	strcat(result, source);
+	if (source) free(source);
+
+	return result;
+}
+
+cl_program build_opencl_kernel(build_kernel_data *data, const char *filename, const char *x11EvoCode)
 {
   int pl;
-  char *source = file_contents(data->source_filename, &pl);
+  char *source;
+  if (strlen(x11EvoCode) > 0) {
+	  source = generateSource(x11EvoCode);
+	  pl = strlen(source) + 1;
+  }
+  else {
+	  source = file_contents(data->source_filename, &pl);
+  }
+
   size_t sourceSize[] = {(size_t)pl};
   cl_int status;
   cl_program program = NULL;
