@@ -7206,11 +7206,9 @@ static void mutex_unlock_cleanup_handler(void *mutex)
 }
 
 
-static bool checkIfNeedSwitch(struct work *work)
+static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
 {
-	applog(LOG_DEBUG, "Revolver: %u", work->pool->algorithm.type);
-	return (work->pool->algorithm.type == ALGO_X11EVO);
-
+	return (!mythr->work && (work->pool->algorithm.type == ALGO_X11EVO));
 }
 
 static void twistTheRevolver(struct thr_info *mythr, struct work *work)
@@ -7376,7 +7374,8 @@ static void get_work_prepare_thread(struct thr_info *mythr, struct work *work)
   applog(LOG_DEBUG, "[THR%d] get_work_prepare_thread", mythr->id);
 
   
-  if (checkIfNeedSwitch(work)) {
+  
+  if (checkIfNeedSwitch(mythr, work)) {
 	  twistTheRevolver(mythr, work);
 	  return;
   }
