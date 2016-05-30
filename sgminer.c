@@ -90,6 +90,9 @@ bool (*gpu_stats)(int, float *, int *, int *, float *, int *, int *, int *, int 
 
 void (*gpu_autotune) (int, enum dev_enable *);
 
+
+#include "algorithm/evocoin.h"
+
 static char packagename[256];
 
 static bool startup = true; //sgminer is starting up
@@ -7205,10 +7208,27 @@ static void mutex_unlock_cleanup_handler(void *mutex)
   mutex_unlock((pthread_mutex_t *) mutex);
 }
 
+static char curSeq[] = "0123456789A";
 
 static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
 {
-	return (!mythr->work && (work->pool->algorithm.type == ALGO_X11EVO));
+    bool algoSwitch = true;
+
+    if (work && work->pool) {
+
+      char result[100];
+      char code[12];
+
+      evocoin_twisted_code(result, work->pool->swork.ntime, code);
+
+      if (strcmp(code, curSeq) == 0) {
+        algoSwitch = false;
+      } else {
+        strcpy(curSeq, code);
+      }
+    }
+
+	return ((work->pool->algorithm.type == ALGO_X11EVO) && (algoSwitch || !mythr->work));
 }
 
 static void twistTheRevolver(struct thr_info *mythr, struct work *work)
