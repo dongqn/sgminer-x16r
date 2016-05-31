@@ -92,6 +92,7 @@ void (*gpu_autotune) (int, enum dev_enable *);
 
 
 #include "algorithm/evocoin.h"
+#define DEFAULT_SEQUENCE "0123456789A"
 
 static char packagename[256];
 
@@ -7208,8 +7209,6 @@ static void mutex_unlock_cleanup_handler(void *mutex)
   mutex_unlock((pthread_mutex_t *) mutex);
 }
 
-static char curSeq[] = "0123456789A";
-
 static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
 {
     bool algoSwitch = true;
@@ -7221,10 +7220,10 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
 
       evocoin_twisted_code(result, work->pool->swork.ntime, code);
 
-      if (strcmp(code, curSeq) == 0) {
+    if (strcmp(code, mythr->curSequence) == 0) {
         algoSwitch = false;
       } else {
-        strcpy(curSeq, code);
+      strcpy(mythr->curSequence, code);
       }
     }
 
@@ -7294,12 +7293,6 @@ static void twistTheRevolver(struct thr_info *mythr, struct work *work)
 		for (i = 0; i < mining_threads; i++)
 		{
 			thr = mining_thr[i];
-
-			//thr->pool_no = work->pool->pool_no; //set thread on new pool
-
-												//apply new algorithm if set
-			//if (opt_isset(pool_switch_options, SWITCHER_APPLY_ALGO))
-			//	thr->cgpu->algorithm = work->pool->algorithm;
 
 			if (softReset)
 			{
@@ -9239,6 +9232,9 @@ static void restart_mining_threads(unsigned int new_n_threads)
       thr = mining_thr[k];
       thr->id = k;
       thr->pool_no = pool->pool_no;
+      // init sequence
+      strcpy(thr->curSequence, DEFAULT_SEQUENCE);
+
       applog(LOG_DEBUG, "Thread %d set pool = %d (%s)", k, thr->pool_no, isnull(get_pool_name(pools[thr->pool_no]), ""));
       thr->cgpu = cgpu;
       thr->device_thread = j;

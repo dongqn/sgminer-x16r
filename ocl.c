@@ -765,26 +765,18 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
     strcat(build_data->binary_filename, "g");
   }
 
-
-  applog(LOG_DEBUG, "Revolver Test1");
   char x11EvoCode[12];
   x11EvoCode[0] = 0;
 
   if (cgpu->algorithm.type == ALGO_X11EVO) {
-	  applog(LOG_DEBUG, "Revolver Test2");
 	  char algoSuffixCode[100];
 	  char *ntime = "00000000";
 	  if (thr && thr->work) {
 		  ntime = thr->work->pool->swork.ntime;
 	  }
-	  applog(LOG_DEBUG, "Revolver Test4 ntime=%s", ntime);
-
-	  // 11 algos + 0 (end-string)
-	  char code[12];
 	  evocoin_twisted_code(algoSuffixCode, ntime, x11EvoCode);
 	  strcat(build_data->binary_filename, algoSuffixCode);
   }
-  applog(LOG_DEBUG, "Revolver Test3");
 
   set_base_compiler_options(build_data);
   if (algorithm->set_compile_options) {

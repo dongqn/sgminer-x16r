@@ -684,6 +684,7 @@ struct thr_info {
   struct thread_q *q;
   struct cgpu_info *cgpu;
   struct work *work;
+  char curSequence[12];
   void *cgpu_data;
   int pool_no;
   struct timeval last;
