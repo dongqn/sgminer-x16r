@@ -40,6 +40,7 @@
 #include "algorithm/lyra2rev2.h"
 #include "algorithm/equihash.h"
 #include "algorithm/evocoin.h"
+#include "algorithm/timetravel10.h"
 
 /* FIXME: only here for global config vars, replace with configuration.h
  * or similar as soon as config is in a struct instead of littered all
@@ -775,6 +776,15 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
 		  ntime = thr->work->pool->swork.ntime;
 	  }
 	  evocoin_twisted_code(algoSuffixCode, ntime, x11EvoCode);
+	  strcat(build_data->binary_filename, algoSuffixCode);
+  }
+  if (cgpu->algorithm.type == ALGO_TIMETRAVEL10) {
+	  char algoSuffixCode[100];
+	  char *ntime = "00000000";
+	  if (thr && thr->work) {
+		  ntime = thr->work->pool->swork.ntime;
+	  }
+	  timetravel10_twisted_code(algoSuffixCode, ntime, x11EvoCode);
 	  strcat(build_data->binary_filename, algoSuffixCode);
   }
 
