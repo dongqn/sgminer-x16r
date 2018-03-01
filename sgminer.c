@@ -75,6 +75,7 @@ char *curly = ":D";
 
 #include "algorithm/evocoin.h"
 #include "algorithm/timetravel10.h"
+#include "algorithm/x16r.h"
 #define DEFAULT_SEQUENCE "0123456789A"
 
 static char packagename[256];
@@ -6657,12 +6658,14 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
   if (work && work->pool) {
 
     char result[100];
-    char code[12];
+    char code[17];
 
-    if (work->pool->algorithm.type == ALGO_X11EVO) { 
+    if (work->pool->algorithm.type == ALGO_X11EVO) {
         evocoin_twisted_code(result, work->pool->swork.ntime, code);
-    } else if (work->pool->algorithm.type == ALGO_TIMETRAVEL10) { 
+    } else if (work->pool->algorithm.type == ALGO_TIMETRAVEL10) {
         timetravel10_twisted_code(result, work->pool->swork.ntime, code);
+    } else if (work->pool->algorithm.type == ALGO_X16R) {
+        x16r_twisted_code((const uint32_t* )work->data, code);
     }
 
     if (strcmp(code, mythr->curSequence) == 0) {
@@ -6672,16 +6675,19 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
     }
   }
 
-  return ((work->pool->algorithm.type == ALGO_X11EVO || work->pool->algorithm.type == ALGO_TIMETRAVEL10) && (algoSwitch || !mythr->work));
+  return ((work->pool->algorithm.type == ALGO_X11EVO ||
+      work->pool->algorithm.type == ALGO_TIMETRAVEL10 ||
+      work->pool->algorithm.type == ALGO_X16R)
+    && (algoSwitch || !mythr->work));
 }
 
 static void twistTheRevolver(struct thr_info *mythr, struct work *work)
 {
 	applog(LOG_DEBUG, "Twist the revolver. Time = %s" , work->pool->swork.ntime);
-	
+
 	bool softReset = true;
 	int i;
-	
+
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 	mutex_lock(&algo_switch_lock);
 
@@ -6832,12 +6838,12 @@ static void get_work_prepare_thread(struct thr_info *mythr, struct work *work)
   applog(LOG_DEBUG, "[THR%d] get_work_prepare_thread", mythr->id);
 
 
-  
+
   if (checkIfNeedSwitch(mythr, work)) {
 	  twistTheRevolver(mythr, work);
 	  return;
   }
-  
+
   //if switcher is disabled
   if(opt_switchmode == SWITCH_OFF)
     return;

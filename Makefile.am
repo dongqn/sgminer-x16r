@@ -65,6 +65,7 @@ sgminer_SOURCES += algorithm/maxcoin.c algorithm/maxcoin.h
 sgminer_SOURCES += algorithm/talkcoin.c algorithm/talkcoin.h
 sgminer_SOURCES += algorithm/bitblock.c algorithm/bitblock.h
 sgminer_SOURCES += algorithm/x14.c algorithm/x14.h
+sgminer_SOURCES += algorithm/x16r.c algorithm/x16r.h
 sgminer_SOURCES += algorithm/evocoin.c algorithm/evocoin.h
 sgminer_SOURCES += algorithm/timetravel10.c algorithm/timetravel10.h
 sgminer_SOURCES += algorithm/fresh.c algorithm/fresh.h
@@ -73,4 +74,3 @@ sgminer_SOURCES += algorithm/neoscrypt.c algorithm/neoscrypt.h
 sgminer_SOURCES += algorithm/whirlpoolx.c algorithm/whirlpoolx.h
 
 bin_SCRIPTS	= $(top_srcdir)/kernel/*.cl
-

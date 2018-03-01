@@ -267,6 +267,7 @@
     <ClCompile Include="..\algorithm\talkcoin.c" />
     <ClCompile Include="..\algorithm\whirlpoolx.c" />
     <ClCompile Include="..\algorithm\x14.c" />
+    <ClCompile Include="..\algorithm\x16r.c" />
     <ClCompile Include="..\algorithm\fresh.c" />
     <ClCompile Include="..\algorithm\whirlcoin.c" />
     <ClCompile Include="..\api.c" />
@@ -329,6 +330,7 @@
     <ClInclude Include="..\algorithm\talkcoin.h" />
     <ClInclude Include="..\algorithm\whirlpoolx.h" />
     <ClInclude Include="..\algorithm\x14.h" />
+    <ClInclude Include="..\algorithm\x16r.h" />
     <ClInclude Include="..\algorithm\fresh.h" />
     <ClInclude Include="..\algorithm\whirlcoin.h" />
     <ClInclude Include="..\api.h" />

@@ -67,6 +67,10 @@ typedef long sph_s64;
 #include "shavite.cl"
 #include "simd.cl"
 #include "echo.cl"
+#include "hamsi.cl"
+#include "shabal.cl"
+#include "whirlpool.cl"
+#include "wolf-sha512.cl"
 
 #define SWAP4(x) as_uint(as_uchar4(x).wzyx)
 #define SWAP8(x) as_ulong(as_uchar8(x).s76543210)
@@ -100,4 +104,3 @@ __kernel void search(__global unsigned char* block, volatile __global uint* outp
 		AES3[i] = AES3_C[i];
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
-

@@ -66,7 +66,7 @@ void set_base_compiler_options(build_kernel_data *data)
     applog(LOG_DEBUG, "cl_amd_media_ops found, setting BITALIGN");
   } else
     applog(LOG_DEBUG, "cl_amd_media_ops not found, will not set BITALIGN");
-  
+
   if (data->kernel_path) {
     strcat(data->compiler_options, " -I \"");
     strcat(data->compiler_options, data->kernel_path);
@@ -107,13 +107,14 @@ bool needs_bfi_patch(build_kernel_data *data)
 
 
 typedef struct _algorithm_get_settings_t {
-	const char *algo; 
-	bool inverter;   
+	const char *algo;
+	bool inverter;
 	bool req_inverted; // inverted is 1
 } algorithm_get_settings_t;
 
 static algorithm_get_settings_t algo[] = {
-	{"x11evo_blake.cl",		true,	false },
+  // 64-byte kernels
+	{"x16r_blake.cl",		false,	false },
 	{"x11evo_bmw.cl",		false,	true },
 	{"x11evo_groestl.cl",	false,	true },
 	{"x11evo_skein.cl",		false,	true },
@@ -123,14 +124,36 @@ static algorithm_get_settings_t algo[] = {
 	{"x11evo_cubehash.cl",	true,	true },
 	{"x11evo_shavite.cl",	false,	false },
 	{"x11evo_simd.cl",		false,	false },
-	{"x11evo_echo.cl",		false,	false }
+	{"x11evo_echo.cl",		false,	false },
+	{"x16r_hamsi.cl",		false,	false },
+	{"x16r_fugue.cl",		true,	false },
+	{"x16r_shabal.cl",		false,	false },
+	{"x16r_whirlpool.cl",		false,	false },
+	{"x16r_sha512.cl",		true,	true },
+  // 80-byte kernels
+	{"x16r_blake_80.cl",		true,	false },
+	{"x16r_bmw_80.cl",		true,	false },
+	{"x16r_groestl_80.cl",	true,	false },
+	{"x16r_skein_80.cl",		true,	false },
+	{"x16r_jh_80.cl",		true,	false },      // check
+	{"x16r_keccak_80.cl",	false,	true },    // maybe?
+	{"x16r_luffa_80.cl",		true,	false },
+	{"x16r_cubehash_80.cl",	true,	false },
+	{"x16r_shavite_80.cl",	true,	false },
+	{"x16r_simd_80.cl",		true,	false },
+	{"x16r_echo_80.cl",		true,	false },
+	{"x16r_hamsi_80.cl",		false,	true },
+	{"x16r_fugue_80.cl",		false,	false },
+	{"x16r_shabal_80.cl",		true,	false },
+	{"x16r_whirlpool_80.cl",		true,	false },
+	{"x16r_sha512_80.cl",		true,	false },
 };
 
 
 char *generateSource(const char *code)
 {
-
-	char *result; 
+  applog(LOG_WARNING, "Generating OCL\n");
+	char *result;
 	result = (char *)malloc(65535);
 
 	int pl;
@@ -155,9 +178,17 @@ char *generateSource(const char *code)
 		else
 			idx = elem - '0';
 
+    // x16r uses a different order for algos 3-5
+    if (strlen(code) == 16 && 3 <= idx && idx <= 5)
+      idx = (idx - 3 + 1) % 3 + 3;
+
+    // Use 80-byte kernel for first algo
+    if (i == 0)
+      idx += 16;
+
 		// calc swap requirements
 		if (curState != algo[idx].req_inverted) {
-			
+
 			// insert swap
 			strcat(result, "\nSWAP_RESULT;\n");
 
@@ -201,7 +232,7 @@ cl_program build_opencl_kernel(build_kernel_data *data, const char *filename, co
   else {
 	  source = file_contents(data->source_filename, &pl);
   }
-  
+
   size_t sourceSize[] = {(size_t)pl};
   cl_int status;
   cl_program program = NULL;
