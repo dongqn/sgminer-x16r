@@ -8,24 +8,24 @@
 	  for (int i = 0; i < 2; i++)
 	  {
 		  if (i == 0) {
-			  h0h ^= DEC64E(hash.h8[0]);
-			  h0l ^= DEC64E(hash.h8[1]);
-			  h1h ^= DEC64E(hash.h8[2]);
-			  h1l ^= DEC64E(hash.h8[3]);
-			  h2h ^= DEC64E(hash.h8[4]);
-			  h2l ^= DEC64E(hash.h8[5]);
-			  h3h ^= DEC64E(hash.h8[6]);
-			  h3l ^= DEC64E(hash.h8[7]);
+			  h0h ^= DEC64BE(hash.h8[0]);
+			  h0l ^= DEC64BE(hash.h8[1]);
+			  h1h ^= DEC64BE(hash.h8[2]);
+			  h1l ^= DEC64BE(hash.h8[3]);
+			  h2h ^= DEC64BE(hash.h8[4]);
+			  h2l ^= DEC64BE(hash.h8[5]);
+			  h3h ^= DEC64BE(hash.h8[6]);
+			  h3l ^= DEC64BE(hash.h8[7]);
 		  }
 		  else if (i == 1) {
-			  h4h ^= DEC64E(hash.h8[0]);
-			  h4l ^= DEC64E(hash.h8[1]);
-			  h5h ^= DEC64E(hash.h8[2]);
-			  h5l ^= DEC64E(hash.h8[3]);
-			  h6h ^= DEC64E(hash.h8[4]);
-			  h6l ^= DEC64E(hash.h8[5]);
-			  h7h ^= DEC64E(hash.h8[6]);
-			  h7l ^= DEC64E(hash.h8[7]);
+			  h4h ^= DEC64BE(hash.h8[0]);
+			  h4l ^= DEC64BE(hash.h8[1]);
+			  h5h ^= DEC64BE(hash.h8[2]);
+			  h5l ^= DEC64BE(hash.h8[3]);
+			  h6h ^= DEC64BE(hash.h8[4]);
+			  h6l ^= DEC64BE(hash.h8[5]);
+			  h7h ^= DEC64BE(hash.h8[6]);
+			  h7l ^= DEC64BE(hash.h8[7]);
 
 			  h0h ^= 0x80;
 			  h3l ^= 0x2000000000000;
@@ -36,13 +36,12 @@
 	  h4h ^= 0x80;
 	  h7l ^= 0x2000000000000;
 
-	  hash.h8[0] = DEC64E(h4h);
-	  hash.h8[1] = DEC64E(h4l);
-	  hash.h8[2] = DEC64E(h5h);
-	  hash.h8[3] = DEC64E(h5l);
-	  hash.h8[4] = DEC64E(h6h);
-	  hash.h8[5] = DEC64E(h6l);
-	  hash.h8[6] = DEC64E(h7h);
-	  hash.h8[7] = DEC64E(h7l);
+	  hash.h8[0] = h4h;
+	  hash.h8[1] = h4l;
+	  hash.h8[2] = h5h;
+	  hash.h8[3] = h5l;
+	  hash.h8[4] = h6h;
+	  hash.h8[5] = h6l;
+	  hash.h8[6] = h7h;
+	  hash.h8[7] = h7l;
   }
-

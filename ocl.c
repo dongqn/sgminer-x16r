@@ -41,6 +41,7 @@
 #include "algorithm/equihash.h"
 #include "algorithm/evocoin.h"
 #include "algorithm/timetravel10.h"
+#include "algorithm/x16r.h"
 
 /* FIXME: only here for global config vars, replace with configuration.h
  * or similar as soon as config is in a struct instead of littered all
@@ -766,7 +767,7 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
     strcat(build_data->binary_filename, "g");
   }
 
-  char x11EvoCode[12];
+  char x11EvoCode[17];
   x11EvoCode[0] = 0;
 
   if (cgpu->algorithm.type == ALGO_X11EVO) {
@@ -785,6 +786,11 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
 		  ntime = thr->work->pool->swork.ntime;
 	  }
 	  timetravel10_twisted_code(algoSuffixCode, ntime, x11EvoCode);
+	  strcat(build_data->binary_filename, algoSuffixCode);
+  }
+  if (cgpu->algorithm.type == ALGO_X16R) {
+	  char algoSuffixCode[100];
+	  x16r_twisted_code((const uint32_t *)algoSuffixCode, x11EvoCode);
 	  strcat(build_data->binary_filename, algoSuffixCode);
   }
 
