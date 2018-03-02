@@ -50,12 +50,12 @@
 				BIG_ROUND;
 		}
 
-		hashp.h8[0] = DEC64BE(block +   0) ^ Vb00 ^ W00 ^ W80;
-		hashp.h8[1] = DEC64BE(block +   8) ^ Vb01 ^ W01 ^ W81;
-		hashp.h8[2] = DEC64BE(block +  16) ^ Vb10 ^ W10 ^ W90;
-		hashp.h8[3] = DEC64BE(block +  24) ^ Vb11 ^ W11 ^ W91;
-		hashp.h8[4] = DEC64BE(block +  32) ^ Vb20 ^ W20 ^ WA0;
-		hashp.h8[5] = DEC64BE(block +  40) ^ Vb21 ^ W21 ^ WA1;
-		hashp.h8[6] = DEC64BE(block +  48) ^ Vb30 ^ W30 ^ WB0;
-		hashp.h8[7] = DEC64BE(block +  56) ^ Vb31 ^ W31 ^ WB1;
+		hash.h8[0] = DEC64BE(block +   0) ^ Vb00 ^ W00 ^ W80;
+		hash.h8[1] = DEC64BE(block +   8) ^ Vb01 ^ W01 ^ W81;
+		hash.h8[2] = DEC64BE(block +  16) ^ Vb10 ^ W10 ^ W90;
+		hash.h8[3] = DEC64BE(block +  24) ^ Vb11 ^ W11 ^ W91;
+		hash.h8[4] = DEC64BE(block +  32) ^ Vb20 ^ W20 ^ WA0;
+		hash.h8[5] = DEC64BE(block +  40) ^ Vb21 ^ W21 ^ WA1;
+		hash.h8[6] = DEC64BE(block +  48) ^ Vb30 ^ W30 ^ WB0;
+		hash.h8[7] = DEC64BE(block +  56) ^ Vb31 ^ W31 ^ WB1;
 	}
