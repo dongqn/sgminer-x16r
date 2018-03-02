@@ -4,16 +4,16 @@
 		sph_u64 M0, M1, M2, M3, M4, M5, M6, M7;
 		sph_u64 M8, M9;
 
-		M0 = DEC64LE(block + 0);
-		M1 = DEC64LE(block + 8);
-		M2 = DEC64LE(block + 16);
-		M3 = DEC64LE(block + 24);
-		M4 = DEC64LE(block + 32);
-		M5 = DEC64LE(block + 40);
-		M6 = DEC64LE(block + 48);
-		M7 = DEC64LE(block + 56);
-		M8 = DEC64LE(block + 64);
-		M9 = DEC64LE(block + 72);
+		M0 = DEC64BE(block + 0);
+		M1 = DEC64BE(block + 8);
+		M2 = DEC64BE(block + 16);
+		M3 = DEC64BE(block + 24);
+		M4 = DEC64BE(block + 32);
+		M5 = DEC64BE(block + 40);
+		M6 = DEC64BE(block + 48);
+		M7 = DEC64BE(block + 56);
+		M8 = DEC64BE(block + 64);
+		M9 = DEC64BE(block + 72);
 		((uint*)&M9)[1] = SWAP4(gid);
 
 		sph_u64 h0 = SPH_C64(0x4903ADFF749C51CE);
