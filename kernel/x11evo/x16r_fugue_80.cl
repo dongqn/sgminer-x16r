@@ -130,20 +130,20 @@
 		S05 ^= S01;
 		S16 ^= S01;
 
-		hash->h4[0] = SWAP4(S01);
-		hash->h4[1] = SWAP4(S02);
-		hash->h4[2] = SWAP4(S03);
-		hash->h4[3] = SWAP4(S04);
-		hash->h4[4] = SWAP4(S09);
-		hash->h4[5] = SWAP4(S10);
-		hash->h4[6] = SWAP4(S11);
-		hash->h4[7] = SWAP4(S12);
-		hash->h4[8] = SWAP4(S18);
-		hash->h4[9] = SWAP4(S19);
-		hash->h4[10] = SWAP4(S20);
-		hash->h4[11] = SWAP4(S21);
-		hash->h4[12] = SWAP4(S27);
-		hash->h4[13] = SWAP4(S28);
-		hash->h4[14] = SWAP4(S29);
-		hash->h4[15] = SWAP4(S30);
+		hash.h4[0] = SWAP4(S01);
+		hash.h4[1] = SWAP4(S02);
+		hash.h4[2] = SWAP4(S03);
+		hash.h4[3] = SWAP4(S04);
+		hash.h4[4] = SWAP4(S09);
+		hash.h4[5] = SWAP4(S10);
+		hash.h4[6] = SWAP4(S11);
+		hash.h4[7] = SWAP4(S12);
+		hash.h4[8] = SWAP4(S18);
+		hash.h4[9] = SWAP4(S19);
+		hash.h4[10] = SWAP4(S20);
+		hash.h4[11] = SWAP4(S21);
+		hash.h4[12] = SWAP4(S27);
+		hash.h4[13] = SWAP4(S28);
+		hash.h4[14] = SWAP4(S29);
+		hash.h4[15] = SWAP4(S30);
 	}
