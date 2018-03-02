@@ -95,6 +95,7 @@ __kernel void search(__global unsigned char* block, volatile __global uint* outp
 	} hash;
 
 	__local sph_u32 AES0[256], AES1[256], AES2[256], AES3[256];
+	__local sph_u32 mixtab0[256], mixtab1[256], mixtab2[256], mixtab3[256];
 	int init = get_local_id(0);
 	int step = get_local_size(0);
 	for (int i = init; i < 256; i += step)
@@ -103,5 +104,9 @@ __kernel void search(__global unsigned char* block, volatile __global uint* outp
 		AES1[i] = AES1_C[i];
 		AES2[i] = AES2_C[i];
 		AES3[i] = AES3_C[i];
+    mixtab0[i] = mixtab0_c[i];
+    mixtab1[i] = mixtab1_c[i];
+    mixtab2[i] = mixtab2_c[i];
+    mixtab3[i] = mixtab3_c[i];
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
