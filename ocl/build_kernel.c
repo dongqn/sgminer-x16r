@@ -152,7 +152,7 @@ static algorithm_get_settings_t algo[] = {
 
 char *generateSource(const char *code)
 {
-  applog(LOG_WARNING, "Generating OCL with: %s", code);
+  applog(LOG_DEBUG, "Generating OCL with: %s", code);
 	char *result;
 	result = (char *)malloc(65535);
 
