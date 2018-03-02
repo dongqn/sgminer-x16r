@@ -67,6 +67,7 @@ typedef long sph_s64;
 #include "shavite.cl"
 #include "simd.cl"
 #include "echo.cl"
+#include "fugue.cl"
 #include "hamsi.cl"
 #include "shabal.cl"
 #include "whirlpool.cl"
