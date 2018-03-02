@@ -53,7 +53,7 @@ typedef long sph_s64;
 	hash.h8[5] = SWAP8(hash.h8[5]); \
 	hash.h8[6] = SWAP8(hash.h8[6]); \
 	hash.h8[7] = SWAP8(hash.h8[7]); \
-  } while (0)
+	} while (0)
 
 
 #include "blake.cl"
@@ -104,9 +104,9 @@ __kernel void search(__global unsigned char* block, volatile __global uint* outp
 		AES1[i] = AES1_C[i];
 		AES2[i] = AES2_C[i];
 		AES3[i] = AES3_C[i];
-    mixtab0[i] = mixtab0_c[i];
-    mixtab1[i] = mixtab1_c[i];
-    mixtab2[i] = mixtab2_c[i];
-    mixtab3[i] = mixtab3_c[i];
+		mixtab0[i] = mixtab0_c[i];
+		mixtab1[i] = mixtab1_c[i];
+		mixtab2[i] = mixtab2_c[i];
+		mixtab3[i] = mixtab3_c[i];
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
