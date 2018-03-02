@@ -501,7 +501,12 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
   }
   if (cgpu->algorithm.type == ALGO_X16R) {
 	  char algoSuffixCode[100];
-	  x16r_twisted_code((const uint32_t *)thr->work->data, x11EvoCode);
+	  if (thr && thr->work && thr->work->data) {
+      x16r_twisted_code((const uint32_t *)thr->work->data, x11EvoCode);
+	  }
+    else {
+      strcpy(x11EvoCode, "0123456789ABCDEF");
+    }
   	sprintf(algoSuffixCode, "_%s_", x11EvoCode);
 	  strcat(build_data->binary_filename, algoSuffixCode);
   }
