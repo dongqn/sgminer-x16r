@@ -106,7 +106,7 @@ static void getAlgoString(const uint32_t* prevblock, char *output)
 	uint8_t* data = (uint8_t*)prevblock;
 
 	for (uint8_t j = 0; j < 16; j++) {
-		uint8_t b = (15 - j) >> 1; // 16 ascii hex chars, reversed
+		uint8_t b = (j + 8) % 16 >> 1; // 16 ascii hex chars, little endian
 		uint8_t algoDigit = (j & 1) ? data[b] & 0xF : data[b] >> 4;
 		if (algoDigit >= 10)
 			sprintf(sptr, "%c", 'A' + (algoDigit - 10));
@@ -120,7 +120,7 @@ static void getAlgoString(const uint32_t* prevblock, char *output)
 
 void x16r_twisted_code(const uint32_t* prevblock, char *code)
 {
-	getAlgoString(prevblock, code);
+	getAlgoString(&prevblock[1], code);
 }
 
 /*
