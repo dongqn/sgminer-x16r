@@ -1,6 +1,7 @@
 
 // whirlpool
   {
+    __local sph_u64 LT0[256], LT1[256], LT2[256], LT3[256], LT4[256], LT5[256], LT6[256], LT7[256];
     sph_u64 n[8];
     sph_u64 h[8];
     sph_u64 state[8];
