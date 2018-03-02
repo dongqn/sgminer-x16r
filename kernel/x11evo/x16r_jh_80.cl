@@ -28,13 +28,13 @@
 				h7l ^= DEC64BE(block + 56);
 			}
 			else if (i == 3) {
-				h0h ^= DEC64E(block + 64);
-				h0l ^= (DEC64E(block + 72) & 0xFFFFFFFF00000000) ^ SWAP4(gid);
+				h0h ^= DEC64BE(block + 64);
+				h0l ^= (DEC64BE(block + 72) & 0xFFFFFFFF00000000) ^ SWAP4(gid);
 				h1h ^= 0x80;
 			}
 			else if (i == 4) {
-				h4h ^= DEC64E(block + 64);
-				h4l ^= (DEC64E(block + 72) & 0xFFFFFFFF00000000) ^ SWAP4(gid);
+				h4h ^= DEC64BE(block + 64);
+				h4l ^= (DEC64BE(block + 72) & 0xFFFFFFFF00000000) ^ SWAP4(gid);
 				h5h ^= 0x80;
 				h3l ^= 0x8002000000000000U;
 			}
