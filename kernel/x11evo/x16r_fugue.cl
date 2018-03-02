@@ -1,7 +1,6 @@
 
 // fugue
   {
-    sph_u32 *mixtab0 = AES0, *mixtab1 = AES1, *mixtab2 = AES2, *mixtab3 = AES3;
     sph_u32 S00, S01, S02, S03, S04, S05, S06, S07, S08, S09;
     sph_u32 S10, S11, S12, S13, S14, S15, S16, S17, S18, S19;
     sph_u32 S20, S21, S22, S23, S24, S25, S26, S27, S28, S29;

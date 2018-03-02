@@ -1,7 +1,6 @@
 
 // fugue
   {
-    sph_u32 *mixtab0 = AES0, *mixtab1 = AES1, *mixtab2 = AES2, *mixtab3 = AES3;
     sph_u32 S00 = 0, S01 = 0, S02 = 0, S03 = 0, S04 = 0, S05 = 0, S06 = 0, S07 = 0, S08 = 0, S09 = 0; \
     sph_u32 S10 = 0, S11 = 0, S12 = 0, S13 = 0, S14 = 0, S15 = 0, S16 = 0, S17 = 0, S18 = 0, S19 = 0; \
     sph_u32 S20 = 0, S21 = 0, S22 = IV256[0], S23 = IV256[1], S24 = IV256[2], S25 = IV256[3], S26 = IV256[4], S27 = IV256[5], S28 = IV256[6], S29 = IV256[7];
@@ -130,10 +129,6 @@
 
     S05 ^= S01;
     S16 ^= S01;
-
-    // bool result = ((((sph_u64) SWAP4(S19) << 32) | SWAP4(S18)) <= target);
-    // if (result)
-    // output[output[0xFF]++] = SWAP4(gid);
 
     hash->h4[0] = SWAP4(S01);
     hash->h4[1] = SWAP4(S02);
