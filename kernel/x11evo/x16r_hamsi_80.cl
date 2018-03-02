@@ -11,9 +11,9 @@
 
 		#define buf(u) block[i + u]
 		for(int i = 0; i < 80; i += 8) {
-				INPUT_BIG;
-				P_BIG;
-				T_BIG;
+			INPUT_BIG;
+			P_BIG;
+			T_BIG;
 		}
 		#undef buf
 		#define buf(u) (u == 0 ? 0x80 : 0)
@@ -25,7 +25,8 @@
 		INPUT_BIG;
 		PF_BIG;
 		T_BIG;
+		#undef buf
 
 		for (unsigned u = 0; u < 16; u ++)
-				hashp.h4[u] = h[u];
+			hashp.h4[u] = h[u];
 	}
