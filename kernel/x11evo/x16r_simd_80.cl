@@ -5,7 +5,7 @@
 		unsigned char x[128];
 		for(unsigned int i = 0; i < 20; i++)
 			((sph_u32*)x)[i] = DEC64BE(block + i*4);
-		((sph_u32*)x)[i] ^= SWAP4(gid);
+		((sph_u32*)x)[19] ^= SWAP4(gid);
 		for(unsigned int i = 64; i < 128; i++)
 			x[i] = 0;
 
