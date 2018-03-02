@@ -135,8 +135,8 @@ static algorithm_get_settings_t algo[] = {
 	{"x16r_bmw_80.cl",		true,	false },
 	{"x16r_groestl_80.cl",	true,	false },
 	{"x16r_skein_80.cl",		true,	false },
-	{"x16r_jh_80.cl",		true,	false },      // check
-	{"x16r_keccak_80.cl",	false,	true },    // maybe?
+	{"x16r_jh_80.cl",		true,	false },
+	{"x16r_keccak_80.cl",	false,	true },
 	{"x16r_luffa_80.cl",		true,	false },
 	{"x16r_cubehash_80.cl",	true,	false },
 	{"x16r_shavite_80.cl",	true,	false },
@@ -146,7 +146,7 @@ static algorithm_get_settings_t algo[] = {
 	{"x16r_fugue_80.cl",		false,	false },
 	{"x16r_shabal_80.cl",		true,	false },
 	{"x16r_whirlpool_80.cl",		true,	false },
-	{"x16r_sha512_80.cl",		true,	false },
+	{"x16r_sha512_80.cl",		false,	false },
 };
 
 

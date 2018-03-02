@@ -15,5 +15,5 @@
 
   SHA512Block(W, hash.h8);
 
-  for(int i = 0; i < 8; ++i) hash.h8[i] = SWAP64(SHA512Out[i]);
+  for(int i = 0; i < 8; ++i) hash.h8[i] = SWAP8(SHA512Out[i]);
 }
