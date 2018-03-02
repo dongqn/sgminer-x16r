@@ -8,24 +8,24 @@
 		for (int i = 0; i < 4; i++)
 		{
 			if (i == 0) {
-				h0h ^= DEC64E(block +  0);
-				h0l ^= DEC64E(block +  8);
-				h1h ^= DEC64E(block + 16);
-				h1l ^= DEC64E(block + 24);
-				h2h ^= DEC64E(block + 32);
-				h2l ^= DEC64E(block + 40);
-				h3h ^= DEC64E(block + 48);
-				h3l ^= DEC64E(block + 56);
+				h0h ^= DEC64BE(block +  0);
+				h0l ^= DEC64BE(block +  8);
+				h1h ^= DEC64BE(block + 16);
+				h1l ^= DEC64BE(block + 24);
+				h2h ^= DEC64BE(block + 32);
+				h2l ^= DEC64BE(block + 40);
+				h3h ^= DEC64BE(block + 48);
+				h3l ^= DEC64BE(block + 56);
 			}
 			else if (i == 1) {
-				h4h ^= DEC64E(block +  0);
-				h4l ^= DEC64E(block +  8);
-				h5h ^= DEC64E(block + 16);
-				h5l ^= DEC64E(block + 24);
-				h6h ^= DEC64E(block + 32);
-				h6l ^= DEC64E(block + 40);
-				h7h ^= DEC64E(block + 48);
-				h7l ^= DEC64E(block + 56);
+				h4h ^= DEC64BE(block +  0);
+				h4l ^= DEC64BE(block +  8);
+				h5h ^= DEC64BE(block + 16);
+				h5l ^= DEC64BE(block + 24);
+				h6h ^= DEC64BE(block + 32);
+				h6l ^= DEC64BE(block + 40);
+				h7h ^= DEC64BE(block + 48);
+				h7l ^= DEC64BE(block + 56);
 			}
 			else if (i == 3) {
 				h0h ^= DEC64E(block + 64);
