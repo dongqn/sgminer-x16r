@@ -28,5 +28,5 @@
 		#undef buf
 
 		for (unsigned u = 0; u < 16; u ++)
-			hashp.h4[u] = h[u];
+			hash.h4[u] = h[u];
 	}
