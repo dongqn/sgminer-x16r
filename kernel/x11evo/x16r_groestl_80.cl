@@ -21,8 +21,8 @@
 		m[7] = DEC64BE(block + 7 * 8);
 		m[8] = DEC64BE(block + 8 * 8);
 		m[9] = DEC64BE(block + 9 * 8);
-		m[9] &= 0x00000000FFFFFFFF;
-		m[9] |= ((sph_u64) gid << 32);
+		m[9] &= 0xFFFFFFFF00000000;
+		m[9] ^= SWAP4(gid);
 
 		for (unsigned int u = 0; u < 16; u ++)
 				g[u] = m[u] ^ H[u];
