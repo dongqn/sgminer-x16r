@@ -79,11 +79,11 @@ typedef long sph_s64;
 #if SPH_BIG_ENDIAN
 	#define DEC32BE(x) (*(const __global sph_u32 *) (x))
 	#define DEC64E(x) (x)
-	#define DEC64BE(x) (*(const __global sph_u64 *) (x));
+	#define DEC64BE(x) (*(const __global sph_u64 *) (x))
 #else
   #define DEC32BE(x) SWAP4(*(const __global sph_u32 *) (x))
 	#define DEC64E(x) SWAP8(x)
-	#define DEC64BE(x) SWAP8(*(const __global sph_u64 *) (x));
+	#define DEC64BE(x) SWAP8(*(const __global sph_u64 *) (x))
 #endif
 
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
