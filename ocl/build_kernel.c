@@ -131,7 +131,7 @@ static algorithm_get_settings_t algo[] = {
 	{"x16r_whirlpool.cl",		false,	false },
 	{"x16r_sha512.cl",		true,	true },
   // 80-byte kernels
-	{"x16r_blake_80.cl",		true,	false },
+	{"x11evo_blake_80.cl",		true,	false },
 	{"x16r_bmw_80.cl",		true,	false },
 	{"x16r_groestl_80.cl",	true,	false },
 	{"x16r_skein_80.cl",		true,	false },
