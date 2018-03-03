@@ -943,9 +943,9 @@ out:
     char kernel_name[9]; // max: search99 + 0x0
 
     if (algorithm->type == ALGO_X16R) {
-      if (clState->n_extra_kernels != strlen(thr->curSequence - 1)) {
-        applog(LOG_ERR, "Error: number of kernels (%d) =/= length of algo sequence (%d)",
-          clState->n_extra_kernels+1, strlen(thr->curSequence));
+      if (clState->n_extra_kernels != strlen(thr->curSequence)) {
+        applog(LOG_ERR, "Error: number of kernels (%d) =/= length of algo sequence + 1 (%d)",
+          clState->n_extra_kernels+1, strlen(thr->curSequence)+1);
         return NULL;
       }
     }
