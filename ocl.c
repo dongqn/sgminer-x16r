@@ -499,17 +499,6 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
 	  timetravel10_twisted_code(algoSuffixCode, ntime, x11EvoCode);
 	  strcat(build_data->binary_filename, algoSuffixCode);
   }
-  if (cgpu->algorithm.type == ALGO_X16R) {
-	  char algoSuffixCode[100];
-	  if (thr && thr->work && thr->work->data) {
-      x16r_twisted_code((const uint32_t *)thr->work->data, x11EvoCode);
-	  }
-    else {
-      strcpy(x11EvoCode, "0123456789ABCDEF");
-    }
-  	sprintf(algoSuffixCode, "_%s_", x11EvoCode);
-	  strcat(build_data->binary_filename, algoSuffixCode);
-  }
 
   set_base_compiler_options(build_data);
   if (algorithm->set_compile_options)
@@ -525,18 +514,15 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
     if (!(clState->program = build_opencl_kernel(build_data, filename, x11EvoCode)))
       return NULL;
 
-    // Don't save x16r kernels because there are too many (16^16)
-    if (cgpu->algorithm.type != ALGO_X16R) {
-      if (save_opencl_kernel(build_data, clState->program)) {
-        /* Program needs to be rebuilt, because the binary was patched */
-        if (build_data->patch_bfi) {
-          clReleaseProgram(clState->program);
-          clState->program = load_opencl_binary_kernel(build_data);
-        }
-      } else {
-        if (build_data->patch_bfi)
-          quit(1, "Could not save kernel to file, but it is necessary to apply BFI patch");
+    if (save_opencl_kernel(build_data, clState->program)) {
+      /* Program needs to be rebuilt, because the binary was patched */
+      if (build_data->patch_bfi) {
+        clReleaseProgram(clState->program);
+        clState->program = load_opencl_binary_kernel(build_data);
       }
+    } else {
+      if (build_data->patch_bfi)
+        quit(1, "Could not save kernel to file, but it is necessary to apply BFI patch");
     }
   }
 
@@ -546,7 +532,14 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
          algorithm->nfactor, algorithm->n);
 
   /* get a kernel object handle for a kernel with the given name */
-  clState->kernel = clCreateKernel(clState->program, "search", &status);
+  if (algorithm->type == ALGO_X16R) {
+    char kernel_name[9]; // max: search9i + 0x0
+    snprintf(kernel_name, 12, "search%ci", thr->curSequence[0]);
+    clState->kernel = clCreateKernel(clState->program, kernel_name, &status);
+  }
+  else {
+    clState->kernel = clCreateKernel(clState->program, "search", &status);
+  }
   if (status != CL_SUCCESS) {
     applog(LOG_ERR, "Error %d: Creating Kernel from program. (clCreateKernel)", status);
     return NULL;
@@ -557,11 +550,28 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
   if (clState->n_extra_kernels > 0) {
     unsigned int i;
     char kernel_name[9]; // max: search99 + 0x0
+    if (algorithm->type == ALGO_X16R) {
+      if (clState->n_extra_kernels != strlen(thr->curSequence - 1)) {
+        applog(LOG_ERR, "Error: number of kernels (%d) =/= length of algo sequence (%d)",
+          clState->n_extra_kernels+1, strlen(thr->curSequence));
+        return NULL;
+      }
+    }
 
     clState->extra_kernels = (cl_kernel *)malloc(sizeof(cl_kernel) * clState->n_extra_kernels);
 
     for (i = 0; i < clState->n_extra_kernels; i++) {
-      snprintf(kernel_name, 9, "%s%d", "search", i + 1);
+      if (algorithm->type == ALGO_X16R) {
+        if (i < clState->n_extra_kernels-1) {
+          snprintf(kernel_name, 9, "search%c", thr->curSequence[i+1]);
+        }
+        else {
+          strcpy(kernel_name, "output");
+        }
+      }
+      else {
+        snprintf(kernel_name, 9, "search%d", i + 1);
+      }
       clState->extra_kernels[i] = clCreateKernel(clState->program, kernel_name, &status);
       if (status != CL_SUCCESS) {
         applog(LOG_ERR, "Error %d: Creating ExtraKernel #%d from program. (clCreateKernel)", status, i);

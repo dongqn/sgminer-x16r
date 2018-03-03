@@ -178,10 +178,6 @@ char *generateSource(const char *code)
 		else
 			idx = elem - '0';
 
-    // x16r uses a different order for algos 3-5
-    if (strlen(code) == 16 && 3 <= idx && idx <= 5)
-      idx = (idx - 3 + 1) % 3 + 3;
-
     // Use 80-byte kernel for first algo
     if (i == 0)
       idx += 16;
