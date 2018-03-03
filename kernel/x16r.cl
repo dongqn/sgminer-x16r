@@ -91,6 +91,8 @@ typedef long sph_s64;
 #include "echo.cl"
 #include "hamsi.cl"
 #include "fugue.cl"
+#include "shabal.cl"
+#include "whirlpool.cl"
 #include "wolf-sha512.cl"
 
 #define SWAP4(x) as_uint(as_uchar4(x).wzyx)
