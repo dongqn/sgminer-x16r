@@ -97,15 +97,17 @@ typedef long sph_s64;
 #define SWAP8(x) as_ulong(as_uchar8(x).s76543210)
 
 #if SPH_BIG_ENDIAN
+    #define DEC32BE(x) (*(const __global sph_u32 *) (x))
+    #define DEC32LE(x) SWAP4(*(const __global sph_u32 *) (x))
+    #define DEC64BE(x) (*(const __global sph_u64 *) (x))
+    #define DEC64LE(x) SWAP8(*(const __global sph_u64 *) (x))
     #define DEC64E(x) (x)
-    #define DEC64BE(x) (*(const __global sph_u64 *) (x));
-    #define DEC32LE(x) SWAP4(*(const __global sph_u32 *) (x));
-    #define DEC64LE(x) SWAP8(*(const __global sph_u64 *) (x));
 #else
+    #define DEC32BE(x) SWAP4(*(const __global sph_u32 *) (x))
+    #define DEC32LE(x) (*(const __global sph_u32 *) (x))
+    #define DEC64BE(x) SWAP8(*(const __global sph_u64 *) (x))
+    #define DEC64LE(x) (*(const __global sph_u64 *) (x))
     #define DEC64E(x) SWAP8(x)
-    #define DEC64BE(x) SWAP8(*(const __global sph_u64 *) (x));
-    #define DEC32LE(x) (*(const __global sph_u32 *) (x));
-    #define DEC64LE(x) (*(const __global sph_u64 *) (x));
 #endif
 
 typedef union {
@@ -641,34 +643,34 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
     sph_u32 xo = SPH_C32(0xD65C8A2B), xp = SPH_C32(0xA5A70E75), xq = SPH_C32(0xB1C62456), xr = SPH_C32(0xBC796576);
     sph_u32 xs = SPH_C32(0x1921C8F7), xt = SPH_C32(0xE7989AF1), xu = SPH_C32(0x7795D246), xv = SPH_C32(0xD43E3B44);
 
-    x0 ^= SWAP4(block + 4);
-    x1 ^= SWAP4(block + 0);
-    x2 ^= SWAP4(block + 12);
-    x3 ^= SWAP4(block + 8);
-    x4 ^= SWAP4(block + 20);
-    x5 ^= SWAP4(block + 16);
-    x6 ^= SWAP4(block + 28);
-    x7 ^= SWAP4(block + 24);
+    x0 ^= DEC32BE(block + 4);
+    x1 ^= DEC32BE(block + 0);
+    x2 ^= DEC32BE(block + 12);
+    x3 ^= DEC32BE(block + 8);
+    x4 ^= DEC32BE(block + 20);
+    x5 ^= DEC32BE(block + 16);
+    x6 ^= DEC32BE(block + 28);
+    x7 ^= DEC32BE(block + 24);
 
     for (int i = 0; i < 13; i++) {
         SIXTEEN_ROUNDS;
 
         if (i == 0) {
-            x0 ^= SWAP4(block + 36);
-            x1 ^= SWAP4(block + 32);
-            x2 ^= SWAP4(block + 44);
-            x3 ^= SWAP4(block + 40);
-            x4 ^= SWAP4(block + 52);
-            x5 ^= SWAP4(block + 48);
-            x6 ^= SWAP4(block + 60);
-            x7 ^= SWAP4(block + 56);
+            x0 ^= DEC32BE(block + 36);
+            x1 ^= DEC32BE(block + 32);
+            x2 ^= DEC32BE(block + 44);
+            x3 ^= DEC32BE(block + 40);
+            x4 ^= DEC32BE(block + 52);
+            x5 ^= DEC32BE(block + 48);
+            x6 ^= DEC32BE(block + 60);
+            x7 ^= DEC32BE(block + 56);
         }
         else if (i == 1) {
-            x0 ^= SWAP4(block + 68);
-            x1 ^= SWAP4(block + 64);
-            x2 ^= SWAP4(block + 76);
-            x3 ^= SWAP4(block + 72);
-            x3 ^= SWAP4(gid);
+            x0 ^= DEC32BE(block + 68);
+            x1 ^= DEC32BE(block + 64);
+            x2 ^= DEC32BE(block + 76);
+            x3 ^= DEC32BE(block + 72);
+            x3 ^= DEC32BE(gid);
             x4 ^= 0x80;
         }
         else if (i == 2) {
