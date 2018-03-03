@@ -1059,7 +1059,7 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
         mixtab2[i] = mixtab2_c[i];
         mixtab3[i] = mixtab3_c[i];
     }
-    barrier(CLK_GLOBAL_MEM_FENCE);
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     sph_u32 S00 = 0, S01 = 0, S02 = 0, S03 = 0, S04 = 0, S05 = 0, S06 = 0, S07 = 0, S08 = 0, S09 = 0; \
     sph_u32 S10 = 0, S11 = 0, S12 = 0, S13 = 0, S14 = 0, S15 = 0, S16 = 0, S17 = 0, S18 = 0, S19 = 0; \
@@ -2212,9 +2212,24 @@ __kernel void searchC(__global hash_t* hashes)
     __local  hash_t hash;
     __global hash_t *hashp = &(hashes[gid-offset]);
 
+    //mixtab
+    __local sph_u32 mixtab0[256], mixtab1[256], mixtab2[256], mixtab3[256];
+    int init = get_local_id(0);
+    int step = get_local_size(0);
+    for (int i = init; i < 256; i += step)
+    {
+        mixtab0[i] = mixtab0_c[i];
+        mixtab1[i] = mixtab1_c[i];
+        mixtab2[i] = mixtab2_c[i];
+        mixtab3[i] = mixtab3_c[i];
+    }
+
     for (int i = 0; i < 8; i++) {
         hash.h8[i] = hashp->h8[i];
     }
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
 
     sph_u32 S00, S01, S02, S03, S04, S05, S06, S07, S08, S09;
     sph_u32 S10, S11, S12, S13, S14, S15, S16, S17, S18, S19;
