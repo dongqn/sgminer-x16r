@@ -593,10 +593,14 @@ static cl_int queue_x16r_kernel(struct __clState *clState,
   CL_SET_ARG(clState->CLbuffer0);
   CL_SET_ARG(clState->padbuffer8);
 
-  for (unsigned int i = 1; i < 16; ++i) {
+  // 15 intermediate 64-byte kernels
+  kernel = clState->extra_kernels;
+  CL_SET_ARG_0(clState->padbuffer8);
+  for (unsigned int i = 1; i < 15; ++i) {
     CL_NEXTKERNEL_SET_ARG_0(clState->padbuffer8);
   }
 
+  num = 0;
   CL_NEXTKERNEL_SET_ARG(clState->padbuffer8);
   CL_SET_ARG(clState->outputBuffer);
   CL_SET_ARG(le_target);
@@ -759,7 +763,7 @@ static algorithm_settings_t algos[] = {
   { "bitblock", ALGO_X15, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 14, 4 * 16 * 4194304, 0, bitblock_regenhash, queue_bitblock_kernel, gen_hash, append_x13_compiler_options},
   { "bitblockold", ALGO_X15, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 10, 4 * 16 * 4194304, 0, bitblock_regenhash, queue_bitblockold_kernel, gen_hash, append_x13_compiler_options},
 
-  { "x16r", ALGO_X16R, "", 1, 256, 256, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 16, 4 * 16 * 4194304, 0, x16r_regenhash, queue_sph_kernel, gen_hash, append_x13_compiler_options },
+  { "x16r", ALGO_X16R, "", 1, 256, 256, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 16, 4 * 16 * 4194304, 0, x16r_regenhash, queue_x16r_kernel, gen_hash, append_x13_compiler_options },
 
   { "talkcoin-mod", ALGO_NIST, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 4,  8 * 16 * 4194304, 0, talkcoin_regenhash, queue_talkcoin_mod_kernel, gen_hash, append_x11_compiler_options},
 
