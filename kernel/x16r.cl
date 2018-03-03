@@ -215,14 +215,14 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
     #undef H
     #undef dH
 
-    hash->h8[0] = SWAP8(BMW_h1[8]);
-    hash->h8[1] = SWAP8(BMW_h1[9]);
-    hash->h8[2] = SWAP8(BMW_h1[10]);
-    hash->h8[3] = SWAP8(BMW_h1[11]);
-    hash->h8[4] = SWAP8(BMW_h1[12]);
-    hash->h8[5] = SWAP8(BMW_h1[13]);
-    hash->h8[6] = SWAP8(BMW_h1[14]);
-    hash->h8[7] = SWAP8(BMW_h1[15]);
+    hash->h8[0] = BMW_h1[8];
+    hash->h8[1] = BMW_h1[9];
+    hash->h8[2] = BMW_h1[10];
+    hash->h8[3] = BMW_h1[11];
+    hash->h8[4] = BMW_h1[12];
+    hash->h8[5] = BMW_h1[13];
+    hash->h8[6] = BMW_h1[14];
+    hash->h8[7] = BMW_h1[15];
 
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
@@ -334,14 +334,14 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
 
     h7l ^= 0x8002000000000000U;
 
-    hash->h8[0] = DEC64E(h4h);
-    hash->h8[1] = DEC64E(h4l);
-    hash->h8[2] = DEC64E(h5h);
-    hash->h8[3] = DEC64E(h5l);
-    hash->h8[4] = DEC64E(h6h);
-    hash->h8[5] = DEC64E(h6l);
-    hash->h8[6] = DEC64E(h7h);
-    hash->h8[7] = DEC64E(h7l);
+    hash->h8[0] = h4h;
+    hash->h8[1] = h4l;
+    hash->h8[2] = h5h;
+    hash->h8[3] = h5l;
+    hash->h8[4] = h6h;
+    hash->h8[5] = h6l;
+    hash->h8[6] = h7h;
+    hash->h8[7] = h7l;
 
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
@@ -383,14 +383,14 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
     a10 = ~a10;
     a20 = ~a20;
 
-    hash->h8[0] = SWAP8(a00);
-    hash->h8[1] = SWAP8(a10);
-    hash->h8[2] = SWAP8(a20);
-    hash->h8[3] = SWAP8(a30);
-    hash->h8[4] = SWAP8(a40);
-    hash->h8[5] = SWAP8(a01);
-    hash->h8[6] = SWAP8(a11);
-    hash->h8[7] = SWAP8(a21);
+    hash->h8[0] = a00;
+    hash->h8[1] = a10;
+    hash->h8[2] = a20;
+    hash->h8[3] = a30;
+    hash->h8[4] = a40;
+    hash->h8[5] = a01;
+    hash->h8[6] = a11;
+    hash->h8[7] = a21;
 
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
@@ -793,13 +793,12 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
 
     FFT256(0, 1, 0, ll1);
     for (int i = 0; i < 256; i ++) {
-            s32 tq;
-
-            tq = q[i] + yoff_b_n[i];
-            tq = REDS2(tq);
-            tq = REDS1(tq);
-            tq = REDS1(tq);
-            q[i] = (tq <= 128 ? tq : tq - 257);
+        s32 tq;
+        tq = q[i] + yoff_b_n[i];
+        tq = REDS2(tq);
+        tq = REDS1(tq);
+        tq = REDS1(tq);
+        q[i] = (tq <= 128 ? tq : tq - 257);
     }
 
     A0 ^= DEC64BE(block +  0);
@@ -1109,22 +1108,22 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     S18 ^= S00;
     S27 ^= S00;
 
-    hash->h4[0] = SWAP4(S01);
-    hash->h4[1] = SWAP4(S02);
-    hash->h4[2] = SWAP4(S03);
-    hash->h4[3] = SWAP4(S04);
-    hash->h4[4] = SWAP4(S09);
-    hash->h4[5] = SWAP4(S10);
-    hash->h4[6] = SWAP4(S11);
-    hash->h4[7] = SWAP4(S12);
-    hash->h4[8] = SWAP4(S18);
-    hash->h4[9] = SWAP4(S19);
-    hash->h4[10] = SWAP4(S20);
-    hash->h4[11] = SWAP4(S21);
-    hash->h4[12] = SWAP4(S27);
-    hash->h4[13] = SWAP4(S28);
-    hash->h4[14] = SWAP4(S29);
-    hash->h4[15] = SWAP4(S30);
+    hash->h4[0] = S01;
+    hash->h4[1] = S02;
+    hash->h4[2] = S03;
+    hash->h4[3] = S04;
+    hash->h4[4] = S09;
+    hash->h4[5] = S10;
+    hash->h4[6] = S11;
+    hash->h4[7] = S12;
+    hash->h4[8] = S18;
+    hash->h4[9] = S19;
+    hash->h4[10] = S20;
+    hash->h4[11] = S21;
+    hash->h4[12] = S27;
+    hash->h4[13] = S28;
+    hash->h4[14] = S29;
+    hash->h4[15] = S30;
 
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
@@ -1325,7 +1324,7 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 
 	SHA512Block(W, SHA512Out);
 
-	for(int i = 0; i < 8; ++i) hash->h8[i] = SWAP8(SHA512Out[i]);
+	for(int i = 0; i < 8; ++i) hash->h8[i] = SHA512Out[i];
 
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
