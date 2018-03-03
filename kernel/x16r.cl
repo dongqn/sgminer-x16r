@@ -1067,8 +1067,8 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     FUGUE512_3((DEC32BE(block+36)), (DEC32BE(block+40)), (DEC32BE(block+44)));
     FUGUE512_3((DEC32BE(block+48)), (DEC32BE(block+52)), (DEC32BE(block+56)));
     FUGUE512_3((DEC32BE(block+60)), (DEC32BE(block+64)), (DEC32BE(block+68)));
-    FUGUE512_F((DEC32BE(block+72)]), (DEC32BE(block+76))<<8 + SWAP4(gid),
-        0, 80<<3);
+    FUGUE512_F((DEC32BE(block+72)), (((DEC32BE(block+76))<<8) ^ SWAP4(gid)),
+        0, (80<<3));
 
     // apply round shift if necessary
     int i;
@@ -1307,7 +1307,7 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
 
 // sha512_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchFi(__global hash_t* hashes)
+__kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
