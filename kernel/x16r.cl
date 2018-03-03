@@ -1109,24 +1109,22 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     S18 ^= S00;
     S27 ^= S00;
 
-    hash.h4[0] = SWAP4(S01);
-    hash.h4[1] = SWAP4(S02);
-    hash.h4[2] = SWAP4(S03);
-    hash.h4[3] = SWAP4(S04);
-    hash.h4[4] = SWAP4(S09);
-    hash.h4[5] = SWAP4(S10);
-    hash.h4[6] = SWAP4(S11);
-    hash.h4[7] = SWAP4(S12);
-    hash.h4[8] = SWAP4(S18);
-    hash.h4[9] = SWAP4(S19);
-    hash.h4[10] = SWAP4(S20);
-    hash.h4[11] = SWAP4(S21);
-    hash.h4[12] = SWAP4(S27);
-    hash.h4[13] = SWAP4(S28);
-    hash.h4[14] = SWAP4(S29);
-    hash.h4[15] = SWAP4(S30);
-
-    *hashp = hash;
+    hash->h4[0] = SWAP4(S01);
+    hash->h4[1] = SWAP4(S02);
+    hash->h4[2] = SWAP4(S03);
+    hash->h4[3] = SWAP4(S04);
+    hash->h4[4] = SWAP4(S09);
+    hash->h4[5] = SWAP4(S10);
+    hash->h4[6] = SWAP4(S11);
+    hash->h4[7] = SWAP4(S12);
+    hash->h4[8] = SWAP4(S18);
+    hash->h4[9] = SWAP4(S19);
+    hash->h4[10] = SWAP4(S20);
+    hash->h4[11] = SWAP4(S21);
+    hash->h4[12] = SWAP4(S27);
+    hash->h4[13] = SWAP4(S28);
+    hash->h4[14] = SWAP4(S29);
+    hash->h4[15] = SWAP4(S30);
 
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
@@ -1182,11 +1180,11 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     SWAP_BC;
     INCR_W;
 
-    M0 = DEC64BE(block +  64);
-    M1 = DEC64BE(block +  68);
-    M2 = DEC64BE(block +  72);
+    M0 = DEC32BE(block +  64);
+    M1 = DEC32BE(block +  68);
+    M2 = DEC32BE(block +  72);
     M3 = SWAP4(gid);
-    M4 = 0x8000000000000000;
+    M4 = 0x80000000;
     M5 = M6 = M7 = M8 = M9 = MA = MB = MC = MD = ME = MF = 0;
 
     INPUT_BLOCK_ADD;
@@ -2419,7 +2417,7 @@ __kernel void searchF(__global hash_t* hashes)
 
     ulong W[16] = { 0UL }, SHA512Out[8];
 
-	for(int i = 0; i < 10; ++i) W[i] = DEC64BE(hash.h8[i]);
+	for(int i = 0; i < 10; ++i) W[i] = DEC64BE(hash->h8[i]);
 
 	W[8] = 0x8000000000000000UL;
 	W[15] = 0x0000000000000200UL;
