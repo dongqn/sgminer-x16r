@@ -34,6 +34,10 @@
 #ifndef X16R_CL
 #define X16R_CL
 
+#pragma OPENCL EXTENSION cl_ amd_ printf : enable
+
+#define DEBUG_PRINT
+
 #if __ENDIAN_LITTLE__
 #define SPH_LITTLE_ENDIAN 1
 #else
@@ -120,12 +124,27 @@ typedef long sph_s64;
     #define DEC64LE(x) (*(const __global sph_u64 *) (x))
     #define DEC64E(x) SWAP8(x)
 #endif
+#define DEC64(x) (*(const __global sph_u64 *) (x))
 
 typedef union {
     unsigned char h1[64];
     uint h4[16];
     ulong h8[8];
 } hash_t;
+
+void printhash(hash_t hash) {
+  for (uint i = 0; i < 8; i++) {
+    printf("%016X", hash.h8[i]);
+  }
+  printf("\n");
+}
+
+void printblock(__global unsigned char* block, size_t len) {
+  for (uint i = 0; i < len/8; i++) {
+    printf("%016X", DEC64(block + 8*i));
+  }
+  printf("\n");
+}
 
 // 80-byte hash functions
 
@@ -135,6 +154,13 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     sph_u64 H0 = SPH_C64(0x6A09E667F3BCC908), H1 = SPH_C64(0xBB67AE8584CAA73B);
     sph_u64 H2 = SPH_C64(0x3C6EF372FE94F82B), H3 = SPH_C64(0xA54FF53A5F1D36F1);
@@ -181,6 +207,13 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[6] = H6;
     hash->h8[7] = H7;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("blake_80 output: ");
+        printhash(*hash);
+    }
+    #endif
+
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -190,6 +223,13 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     sph_u64 BMW_H[16];
     for(unsigned u = 0; u < 16; u++)
@@ -246,6 +286,13 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[6] = BMW_h1[14];
     hash->h8[7] = BMW_h1[15];
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("bmw_80 output: ");
+        printhash(*hash);
+    }
+    #endif
+
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -256,13 +303,20 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
+
     sph_u64 H[16];
     for (unsigned int u = 0; u < 15; u ++)
-            H[u] = 0;
+        H[u] = 0;
     #if USE_LE
-            H[15] = ((sph_u64)(512 & 0xFF) << 56) | ((sph_u64)(512 & 0xFF00) << 40);
+        H[15] = ((sph_u64)(512 & 0xFF) << 56) | ((sph_u64)(512 & 0xFF00) << 40);
     #else
-            H[15] = (sph_u64)512;
+        H[15] = (sph_u64)512;
     #endif
 
     sph_u64 g[16], m[16];
@@ -280,7 +334,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     m[9] ^= SWAP4(gid);
 
     for (unsigned int u = 0; u < 16; u ++)
-            g[u] = m[u] ^ H[u];
+        g[u] = m[u] ^ H[u];
     m[10] = 0x80; g[10] = m[10] ^ H[10];
     m[11] = 0; g[11] = m[11] ^ H[11];
     m[12] = 0; g[12] = m[12] ^ H[12];
@@ -291,19 +345,25 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     PERM_BIG_Q(m);
 
     for (unsigned int u = 0; u < 16; u ++)
-            H[u] ^= g[u] ^ m[u];
+        H[u] ^= g[u] ^ m[u];
     sph_u64 xH[16];
 
     for (unsigned int u = 0; u < 16; u ++)
-            xH[u] = H[u];
+        xH[u] = H[u];
     PERM_BIG_P(xH);
 
     for (unsigned int u = 0; u < 16; u ++)
-            H[u] ^= xH[u];
+        H[u] ^= xH[u];
 
     for (unsigned int u = 0; u < 8; u ++)
-            hash->h8[u] = H[u + 8];
+        hash->h8[u] = H[u + 8];
 
+        #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("groestl_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -313,6 +373,13 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     sph_u64 h0h = C64e(0x6fd14b963e00aa17), h0l = C64e(0x636a2e057a15d543), h1h = C64e(0x8a225e8d0c97ef0b), h1l = C64e(0xe9341259f2b3c361), h2h = C64e(0x891da0c1536f801e), h2l = C64e(0x2aa9056bea2b6d80), h3h = C64e(0x588eccdb2075baa6), h3l = C64e(0xa90f3a76baf83bf7);
     sph_u64 h4h = C64e(0x0169e60541e34a69), h4l = C64e(0x46b58a8e2e6fe65a), h5h = C64e(0x1047a7d0c1843c24), h5l = C64e(0x3b6e71b12d5ac199), h6h = C64e(0xcf57f6ec9db1f856), h6l = C64e(0xa706887c5716b156), h7h = C64e(0xe3c2fcdfe68517fb), h7l = C64e(0x545a4678cc8cdd4b);
@@ -365,6 +432,12 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[6] = h7h;
     hash->h8[7] = h7l;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("jh_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -374,6 +447,13 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     sph_u64 a00 = 0, a01 = 0, a02 = 0, a03 = 0, a04 = 0;
     sph_u64 a10 = 0, a11 = 0, a12 = 0, a13 = 0, a14 = 0;
@@ -414,6 +494,12 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[6] = a11;
     hash->h8[7] = a21;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("keccak_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -423,6 +509,13 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     sph_u64 M0, M1, M2, M3, M4, M5, M6, M7;
     sph_u64 M8, M9;
@@ -565,6 +658,12 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[6] = p6;
     hash->h8[7] = p7;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("luffa_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -574,6 +673,13 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     sph_u32 V00 = SPH_C32(0x6d251e69), V01 = SPH_C32(0x44b051e0), V02 = SPH_C32(0x4eaa6fb4), V03 = SPH_C32(0xdbf78465), V04 = SPH_C32(0x6e292011), V05 = SPH_C32(0x90152df4), V06 = SPH_C32(0xee058139), V07 = SPH_C32(0xdef610bb);
     sph_u32 V10 = SPH_C32(0xc3b44b95), V11 = SPH_C32(0xd9d2f256), V12 = SPH_C32(0x70eee9a0), V13 = SPH_C32(0xde099fa3), V14 = SPH_C32(0x5d9b0557), V15 = SPH_C32(0x8fc944b3), V16 = SPH_C32(0xcf1ccf0e), V17 = SPH_C32(0x746cd581);
@@ -635,6 +741,12 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[15] = V06 ^ V16 ^ V26 ^ V36 ^ V46;
     hash->h4[14] = V07 ^ V17 ^ V27 ^ V37 ^ V47;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("luffa_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -644,6 +756,13 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     sph_u32 x0 = SPH_C32(0x2AEA2A61), x1 = SPH_C32(0x50F494D4), x2 = SPH_C32(0x2D538B8B), x3 = SPH_C32(0x4167D83E);
     sph_u32 x4 = SPH_C32(0x3FEE2313), x5 = SPH_C32(0xC701CF8C), x6 = SPH_C32(0xCC39968E), x7 = SPH_C32(0x50AC5695);
@@ -706,6 +825,12 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[14] = xe;
     hash->h4[15] = xf;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("cubehash_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -715,6 +840,13 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     __local sph_u32 AES0[256], AES1[256], AES2[256], AES3[256];
 
@@ -790,6 +922,12 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[14] = hE;
     hash->h4[15] = hF;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("shavite_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -799,6 +937,13 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     s32 q[256];
     unsigned char x[128];
@@ -924,6 +1069,12 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[14] = B6;
     hash->h4[15] = B7;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("simd_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -933,6 +1084,13 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     __local sph_u32 AES0[256], AES1[256], AES2[256], AES3[256];
 
@@ -1007,6 +1165,12 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[6] = (DEC64BE(block +  48)) ^ Vb30 ^ W30 ^ WB0;
     hash->h8[7] = (DEC64BE(block +  56)) ^ Vb31 ^ W31 ^ WB1;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("echo_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1016,6 +1180,13 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     sph_u32 c0 = HAMSI_IV512[0], c1 = HAMSI_IV512[1], c2 = HAMSI_IV512[2], c3 = HAMSI_IV512[3];
     sph_u32 c4 = HAMSI_IV512[4], c5 = HAMSI_IV512[5], c6 = HAMSI_IV512[6], c7 = HAMSI_IV512[7];
@@ -1046,6 +1217,12 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
     for (unsigned u = 0; u < 16; u ++)
         hash->h4[u] = h[u];
 
+        #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("hamsi_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1055,6 +1232,13 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     //mixtab
     __local sph_u32 mixtab0[256], mixtab1[256], mixtab2[256], mixtab3[256];
@@ -1147,6 +1331,12 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[14] = S29;
     hash->h4[15] = S30;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("fugue_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1157,6 +1347,13 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
     __global hash_t *hash = &(hashes[gid-offset]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     sph_u32 A00 = A_init_512[0], A01 = A_init_512[1], A02 = A_init_512[2],
             A03 = A_init_512[3], A04 = A_init_512[4], A05 = A_init_512[5],
@@ -1236,6 +1433,12 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[14] = BE;
     hash->h4[15] = BF;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("shabal_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1245,6 +1448,13 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
 
     __local sph_u64 LT0[256], LT1[256], LT2[256], LT3[256], LT4[256], LT5[256], LT6[256], LT7[256];
     sph_u64 n0, n1, n2, n3, n4, n5, n6, n7;
@@ -1324,6 +1534,14 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[5] = state[5] ^ n5;
     hash->h8[6] = state[6] ^ n6;
     hash->h8[7] = state[7] ^ n7 ^ temp7;
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("whirlpool_80 output: ");
+        printhash(*hash);
+    }
+    #endif
+    barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
 // sha512_80
@@ -1333,21 +1551,34 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("input: ");
+        printblock(block, 80);
+    }
+    #endif
+
     ulong W[16] = { 0UL }, SHA512Out[8];
 
-	for(int i = 0; i < 10; ++i) W[i] = DEC64BE(block +  8*i);
+    for(int i = 0; i < 10; ++i) W[i] = DEC64BE(block +  8*i);
 
-	W[9] &= 0xFFFFFFFF00000000UL;
-	W[9] ^= SWAP4(gid);
-	W[10] = 0x8000000000000000UL;
-	W[15] = 0x0000000000000280UL;
+    W[9] &= 0xFFFFFFFF00000000UL;
+    W[9] ^= SWAP4(gid);
+    W[10] = 0x8000000000000000UL;
+    W[15] = 0x0000000000000280UL;
 
-	for(int i = 0; i < 8; ++i) SHA512Out[i] = SHA512_INIT[i];
+    for(int i = 0; i < 8; ++i) SHA512Out[i] = SHA512_INIT[i];
 
-	SHA512Block(W, SHA512Out);
+    SHA512Block(W, SHA512Out);
 
-	for(int i = 0; i < 8; ++i) hash->h8[i] = SHA512Out[i];
+    for(int i = 0; i < 8; ++i) hash->h8[i] = SHA512Out[i];
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("sha512_80 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1403,6 +1634,12 @@ __kernel void search0(__global hash_t* hashes)
     hash->h8[6] = H6;
     hash->h8[7] = H7;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("blake output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1465,6 +1702,12 @@ __kernel void search1(__global hash_t* hashes)
     hash->h8[6] = SWAP8(BMW_h1[14]);
     hash->h8[7] = SWAP8(BMW_h1[15]);
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("bmw output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1545,47 +1788,18 @@ __kernel void search2(__global hash_t* hashes)
     for (unsigned int u = 0; u < 8; u ++)
         hash->h8[u] = DEC64E(H[u + 8]);
 
-    barrier(CLK_GLOBAL_MEM_FENCE);
-}
-
-// skein
-__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search3(__global hash_t* hashes)
-{
-    uint gid = get_global_id(0);
-    __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
-
-    sph_u64 h0 = SPH_C64(0x4903ADFF749C51CE), h1 = SPH_C64(0x0D95DE399746DF03), h2 = SPH_C64(0x8FD1934127C79BCE), h3 = SPH_C64(0x9A255629FF352CB1), h4 = SPH_C64(0x5DB62599DF6CA7B0), h5 = SPH_C64(0xEABE394CA9D5C3F4), h6 = SPH_C64(0x991112C71A75B523), h7 = SPH_C64(0xAE18A40B660FCC33);
-    sph_u64 m0, m1, m2, m3, m4, m5, m6, m7;
-    sph_u64 bcount = 0;
-
-    m0 = SWAP8(hash->h8[0]);
-    m1 = SWAP8(hash->h8[1]);
-    m2 = SWAP8(hash->h8[2]);
-    m3 = SWAP8(hash->h8[3]);
-    m4 = SWAP8(hash->h8[4]);
-    m5 = SWAP8(hash->h8[5]);
-    m6 = SWAP8(hash->h8[6]);
-    m7 = SWAP8(hash->h8[7]);
-    UBI_BIG(480, 64);
-    bcount = 0;
-    m0 = m1 = m2 = m3 = m4 = m5 = m6 = m7 = 0;
-    UBI_BIG(510, 8);
-    hash->h8[0] = SWAP8(h0);
-    hash->h8[1] = SWAP8(h1);
-    hash->h8[2] = SWAP8(h2);
-    hash->h8[3] = SWAP8(h3);
-    hash->h8[4] = SWAP8(h4);
-    hash->h8[5] = SWAP8(h5);
-    hash->h8[6] = SWAP8(h6);
-    hash->h8[7] = SWAP8(h7);
-
+        #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("groestl output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
 // jh
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search4(__global hash_t* hashes)
+__kernel void search3(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1632,12 +1846,18 @@ __kernel void search4(__global hash_t* hashes)
     hash->h8[6] = DEC64E(h7h);
     hash->h8[7] = DEC64E(h7l);
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("jh output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
 // keccak
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search5(__global hash_t* hashes)
+__kernel void search4(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1678,6 +1898,53 @@ __kernel void search5(__global hash_t* hashes)
     hash->h8[6] = SWAP8(a11);
     hash->h8[7] = SWAP8(a21);
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("keccak output: ");
+        printhash(*hash);
+    }
+    #endif
+    barrier(CLK_GLOBAL_MEM_FENCE);
+}
+
+// skein
+__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+__kernel void search5(__global hash_t* hashes)
+{
+    uint gid = get_global_id(0);
+    __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
+    sph_u64 h0 = SPH_C64(0x4903ADFF749C51CE), h1 = SPH_C64(0x0D95DE399746DF03), h2 = SPH_C64(0x8FD1934127C79BCE), h3 = SPH_C64(0x9A255629FF352CB1), h4 = SPH_C64(0x5DB62599DF6CA7B0), h5 = SPH_C64(0xEABE394CA9D5C3F4), h6 = SPH_C64(0x991112C71A75B523), h7 = SPH_C64(0xAE18A40B660FCC33);
+    sph_u64 m0, m1, m2, m3, m4, m5, m6, m7;
+    sph_u64 bcount = 0;
+
+    m0 = SWAP8(hash->h8[0]);
+    m1 = SWAP8(hash->h8[1]);
+    m2 = SWAP8(hash->h8[2]);
+    m3 = SWAP8(hash->h8[3]);
+    m4 = SWAP8(hash->h8[4]);
+    m5 = SWAP8(hash->h8[5]);
+    m6 = SWAP8(hash->h8[6]);
+    m7 = SWAP8(hash->h8[7]);
+    UBI_BIG(480, 64);
+    bcount = 0;
+    m0 = m1 = m2 = m3 = m4 = m5 = m6 = m7 = 0;
+    UBI_BIG(510, 8);
+    hash->h8[0] = SWAP8(h0);
+    hash->h8[1] = SWAP8(h1);
+    hash->h8[2] = SWAP8(h2);
+    hash->h8[3] = SWAP8(h3);
+    hash->h8[4] = SWAP8(h4);
+    hash->h8[5] = SWAP8(h5);
+    hash->h8[6] = SWAP8(h6);
+    hash->h8[7] = SWAP8(h7);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("skein output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1745,6 +2012,12 @@ __kernel void search6(__global hash_t* hashes)
     hash->h4[15] = V06 ^ V16 ^ V26 ^ V36 ^ V46;
     hash->h4[14] = V07 ^ V17 ^ V27 ^ V37 ^ V47;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("luffa output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1809,6 +2082,12 @@ __kernel void search7(__global hash_t* hashes)
     hash->h4[14] = xe;
     hash->h4[15] = xf;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("cubehash output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -1818,6 +2097,7 @@ __kernel void search8(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
+
     __local sph_u32 AES0[256], AES1[256], AES2[256], AES3[256];
 
     int init = get_local_id(0);
@@ -1888,6 +2168,12 @@ __kernel void search8(__global hash_t* hashes)
     hash->h4[14] = hE;
     hash->h4[15] = hF;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("shavite output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -2008,6 +2294,12 @@ __kernel void search9(__global hash_t* hashes)
     hash->h4[14] = B6;
     hash->h4[15] = B7;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("simd output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -2096,6 +2388,12 @@ __kernel void searchA(__global hash_t* hashes)
     hashp->h8[6] = hash.h8[6] ^ Vb30 ^ W30 ^ WB0;
     hashp->h8[7] = hash.h8[7] ^ Vb31 ^ W31 ^ WB1;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("echo output: ");
+        printhash(*hashp);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -2107,6 +2405,7 @@ __kernel void searchB(__global hash_t* hashes)
     uint offset = get_global_offset(0);
     hash_t hash;
     __global hash_t *hashp = &(hashes[gid-offset]);
+
 
     sph_u32 c0 = HAMSI_IV512[0], c1 = HAMSI_IV512[1], c2 = HAMSI_IV512[2], c3 = HAMSI_IV512[3];
     sph_u32 c4 = HAMSI_IV512[4], c5 = HAMSI_IV512[5], c6 = HAMSI_IV512[6], c7 = HAMSI_IV512[7];
@@ -2140,6 +2439,12 @@ __kernel void searchB(__global hash_t* hashes)
     for (unsigned u = 0; u < 16; u ++)
         hashp->h4[u] = h[u];
 
+        #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("hamsi output: ");
+        printhash(*hashp);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -2249,6 +2554,12 @@ __kernel void searchC(__global hash_t* hashes)
 
     *hashp = hash;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("fugue output: ");
+        printhash(*hashp);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -2324,6 +2635,12 @@ __kernel void searchD(__global hash_t* hashes)
     hash->h4[14] = BE;
     hash->h4[15] = BF;
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("shabal output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -2426,6 +2743,12 @@ __kernel void searchE(__global hash_t* hashes)
     for (unsigned i = 0; i < 8; i ++)
         hash->h8[i] = state[i];
 
+        #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("whirlpool output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -2438,17 +2761,23 @@ __kernel void searchF(__global hash_t* hashes)
 
     ulong W[16] = { 0UL }, SHA512Out[8];
 
-	for(int i = 0; i < 10; ++i) W[i] = DEC64BE(hash->h8[i]);
+    for(int i = 0; i < 10; ++i) W[i] = DEC64BE(hash->h8[i]);
 
-	W[8] = 0x8000000000000000UL;
-	W[15] = 0x0000000000000200UL;
+    W[8] = 0x8000000000000000UL;
+    W[15] = 0x0000000000000200UL;
 
-	for(int i = 0; i < 8; ++i) SHA512Out[i] = SHA512_INIT[i];
+    for(int i = 0; i < 8; ++i) SHA512Out[i] = SHA512_INIT[i];
 
-	SHA512Block(W, SHA512Out);
+    SHA512Block(W, SHA512Out);
 
-	for(int i = 0; i < 8; ++i) hash->h8[i] = SWAP8(SHA512Out[i]);
+    for(int i = 0; i < 8; ++i) hash->h8[i] = SWAP8(SHA512Out[i]);
 
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("sha512 output: ");
+        printhash(*hash);
+    }
+    #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -2459,6 +2788,13 @@ __kernel void output(__global hash_t* hashes,
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
     __global hash_t *hashp = &(hashes[gid-offset]);
+
+    #ifdef DEBUG_PRINT
+    if (!gid) {
+        printf("output: ");
+        printhash(*hashp);
+    }
+    #endif
 
     bool result = (hashp->h8[3] <= target);
     if (result)
