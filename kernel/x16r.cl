@@ -65,19 +65,6 @@ typedef long sph_s64;
 #define SPH_ROTL64(x, n)   SPH_T64(((x) << (n)) | ((x) >> (64 - (n))))
 #define SPH_ROTR64(x, n)   SPH_ROTL64(x, (64 - (n)))
 
-#define SPH_ECHO_64 1
-#define SPH_KECCAK_64 1
-#define SPH_JH_64 1
-#define SPH_SIMD_NOCOPY 0
-#define SPH_KECCAK_NOCOPY 0
-#define SPH_COMPACT_BLAKE_64 0
-#define SPH_LUFFA_PARALLEL 0
-#define SPH_SMALL_FOOTPRINT_GROESTL 0
-#define SPH_GROESTL_BIG_ENDIAN 0
-#define SPH_CUBEHASH_UNROLL 0
-#define SPH_KECCAK_UNROLL   0
-#define SPH_HAMSI_EXPAND_BIG 1
-
 #include "blake.cl"
 #include "bmw.cl"
 #include "groestl.cl"
@@ -672,7 +659,7 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
             x1 ^= DEC32BE(block + 64);
             x2 ^= DEC32BE(block + 76);
             x3 ^= DEC32BE(block + 72);
-            x3 ^= DEC32BE(gid);
+            x3 ^= SWAP4(gid);
             x4 ^= 0x80;
         }
         else if (i == 2) {
@@ -1059,153 +1046,87 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
         mixtab2[i] = mixtab2_c[i];
         mixtab3[i] = mixtab3_c[i];
     }
+
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    sph_u32 S00 = 0, S01 = 0, S02 = 0, S03 = 0, S04 = 0, S05 = 0, S06 = 0, S07 = 0, S08 = 0, S09 = 0; \
-    sph_u32 S10 = 0, S11 = 0, S12 = 0, S13 = 0, S14 = 0, S15 = 0, S16 = 0, S17 = 0, S18 = 0, S19 = 0; \
-    sph_u32 S20 = 0, S21 = 0, S22 = IV256[0], S23 = IV256[1], S24 = IV256[2], S25 = IV256[3], S26 = IV256[4], S27 = IV256[5], S28 = IV256[6], S29 = IV256[7];
 
-    FUGUE256_5(DEC32BE(block + 0x0), DEC32BE(block + 0x4), DEC32BE(block + 0x8), DEC32BE(block + 0xc), DEC32BE(block + 0x10));
-    FUGUE256_5(DEC32BE(block + 0x14), DEC32BE(block + 0x18), DEC32BE(block + 0x1c), DEC32BE(block + 0x20), DEC32BE(block + 0x24));
-    FUGUE256_5(DEC32BE(block + 0x28), DEC32BE(block + 0x2c), DEC32BE(block + 0x30), DEC32BE(block + 0x34), DEC32BE(block + 0x38));
-    FUGUE256_4(DEC32BE(block + 0x3c), DEC32BE(block + 0x40), DEC32BE(block + 0x44), DEC32BE(block + 0x48));
+    sph_u32 S00, S01, S02, S03, S04, S05, S06, S07, S08, S09;
+    sph_u32 S10, S11, S12, S13, S14, S15, S16, S17, S18, S19;
+    sph_u32 S20, S21, S22, S23, S24, S25, S26, S27, S28, S29;
+    sph_u32 S30, S31, S32, S33, S34, S35;
 
-    TIX2(SWAP4(gid), S06, S07, S14, S16, S00);
-    CMIX30(S03, S04, S05, S07, S08, S09, S18, S19, S20);
-    SMIX(S03, S04, S05, S06);
-    CMIX30(S00, S01, S02, S04, S05, S06, S15, S16, S17);
-    SMIX(S00, S01, S02, S03);
+    S00 = S01 = S02 = S03 = S04 = S05 = S06 = S07 = S08 = S09 = S10 = S11 = S12 = S13 = S14 = S15 = S16 = S17 = S18 = S19 = 0;
+    S20 = SPH_C32(0x8807a57e); S21 = SPH_C32(0xe616af75); S22 = SPH_C32(0xc5d3e4db); S23 = SPH_C32(0xac9ab027);
+    S24 = SPH_C32(0xd915f117); S25 = SPH_C32(0xb6eecc54); S26 = SPH_C32(0x06e8020b); S27 = SPH_C32(0x4a92efd1);
+    S28 = SPH_C32(0xaac6e2c9); S29 = SPH_C32(0xddb21398); S30 = SPH_C32(0xcae65838); S31 = SPH_C32(0x437f203f);
+    S32 = SPH_C32(0x25ea78e7); S33 = SPH_C32(0x951fddd6); S34 = SPH_C32(0xda6ed11d); S35 = SPH_C32(0xe13e3567);
 
-    TIX2(0, S00, S01, S08, S10, S24);
-    CMIX30(S27, S28, S29, S01, S02, S03, S12, S13, S14);
-    SMIX(S27, S28, S29, S00);
-    CMIX30(S24, S25, S26, S28, S29, S00, S09, S10, S11);
-    SMIX(S24, S25, S26, S27);
+    FUGUE512_3((DEC32BE(block+0)), (DEC32BE(block+4)), (DEC32BE(block+8)));
+    FUGUE512_3((DEC32BE(block+12)), (DEC32BE(block+16)), (DEC32BE(block+20)));
+    FUGUE512_3((DEC32BE(block+24)), (DEC32BE(block+28)), (DEC32BE(block+32)));
+    FUGUE512_3((DEC32BE(block+36)), (DEC32BE(block+40)), (DEC32BE(block+44)));
+    FUGUE512_3((DEC32BE(block+48)), (DEC32BE(block+52)), (DEC32BE(block+56)));
+    FUGUE512_3((DEC32BE(block+60)), (DEC32BE(block+64)), (DEC32BE(block+68)));
+    FUGUE512_F((DEC32BE(block+72)]), (DEC32BE(block+76))<<8 + SWAP4(gid),
+        0, 80<<3);
 
-    TIX2(0x280, S24, S25, S02, S04, S18);
-    CMIX30(S21, S22, S23, S25, S26, S27, S06, S07, S08);
-    SMIX(S21, S22, S23, S24);
-    CMIX30(S18, S19, S20, S22, S23, S24, S03, S04, S05);
-    SMIX(S18, S19, S20, S21);
+    // apply round shift if necessary
+    int i;
 
-    CMIX30(S15, S16, S17, S19, S20, S21, S00, S01, S02);
-    SMIX(S15, S16, S17, S18);
-    CMIX30(S12, S13, S14, S16, S17, S18, S27, S28, S29);
-    SMIX(S12, S13, S14, S15);
-    CMIX30(S09, S10, S11, S13, S14, S15, S24, S25, S26);
-    SMIX(S09, S10, S11, S12);
-    CMIX30(S06, S07, S08, S10, S11, S12, S21, S22, S23);
-    SMIX(S06, S07, S08, S09);
-    CMIX30(S03, S04, S05, S07, S08, S09, S18, S19, S20);
-    SMIX(S03, S04, S05, S06);
-    CMIX30(S00, S01, S02, S04, S05, S06, S15, S16, S17);
-    SMIX(S00, S01, S02, S03);
-    CMIX30(S27, S28, S29, S01, S02, S03, S12, S13, S14);
-    SMIX(S27, S28, S29, S00);
-    CMIX30(S24, S25, S26, S28, S29, S00, S09, S10, S11);
-    SMIX(S24, S25, S26, S27);
-    CMIX30(S21, S22, S23, S25, S26, S27, S06, S07, S08);
-    SMIX(S21, S22, S23, S24);
-    CMIX30(S18, S19, S20, S22, S23, S24, S03, S04, S05);
-    SMIX(S18, S19, S20, S21);
-    S22 ^= S18;
-    S03 ^= S18;
-    SMIX(S03, S04, S05, S06);
-    S07 ^= S03;
-    S19 ^= S03;
-    SMIX(S19, S20, S21, S22);
-    S23 ^= S19;
-    S04 ^= S19;
-    SMIX(S04, S05, S06, S07);
-    S08 ^= S04;
-    S20 ^= S04;
-    SMIX(S20, S21, S22, S23);
-    S24 ^= S20;
-    S05 ^= S20;
-    SMIX(S05, S06, S07, S08);
-    S09 ^= S05;
-    S21 ^= S05;
-    SMIX(S21, S22, S23, S24);
-    S25 ^= S21;
-    S06 ^= S21;
-    SMIX(S06, S07, S08, S09);
-    S10 ^= S06;
-    S22 ^= S06;
-    SMIX(S22, S23, S24, S25);
-    S26 ^= S22;
-    S07 ^= S22;
-    SMIX(S07, S08, S09, S10);
-    S11 ^= S07;
-    S23 ^= S07;
-    SMIX(S23, S24, S25, S26);
-    S27 ^= S23;
-    S08 ^= S23;
-    SMIX(S08, S09, S10, S11);
-    S12 ^= S08;
-    S24 ^= S08;
-    SMIX(S24, S25, S26, S27);
-    S28 ^= S24;
-    S09 ^= S24;
-    SMIX(S09, S10, S11, S12);
-    S13 ^= S09;
-    S25 ^= S09;
-    SMIX(S25, S26, S27, S28);
-    S29 ^= S25;
-    S10 ^= S25;
-    SMIX(S10, S11, S12, S13);
-    S14 ^= S10;
-    S26 ^= S10;
-    SMIX(S26, S27, S28, S29);
-    S00 ^= S26;
-    S11 ^= S26;
-    SMIX(S11, S12, S13, S14);
-    S15 ^= S11;
-    S27 ^= S11;
-    SMIX(S27, S28, S29, S00);
-    S01 ^= S27;
-    S12 ^= S27;
-    SMIX(S12, S13, S14, S15);
-    S16 ^= S12;
-    S28 ^= S12;
-    SMIX(S28, S29, S00, S01);
-    S02 ^= S28;
-    S13 ^= S28;
-    SMIX(S13, S14, S15, S16);
-    S17 ^= S13;
-    S29 ^= S13;
-    SMIX(S29, S00, S01, S02);
-    S03 ^= S29;
-    S14 ^= S29;
-    SMIX(S14, S15, S16, S17);
-    S18 ^= S14;
-    S00 ^= S14;
-    SMIX(S00, S01, S02, S03);
+    for (i = 0; i < 32; i ++) {
+        ROR3;
+        CMIX36(S00, S01, S02, S04, S05, S06, S18, S19, S20);
+        SMIX(S00, S01, S02, S03);
+    }
+    for (i = 0; i < 13; i ++) {
+        S04 ^= S00;
+        S09 ^= S00;
+        S18 ^= S00;
+        S27 ^= S00;
+        ROR9;
+        SMIX(S00, S01, S02, S03);
+        S04 ^= S00;
+        S10 ^= S00;
+        S18 ^= S00;
+        S27 ^= S00;
+        ROR9;
+        SMIX(S00, S01, S02, S03);
+        S04 ^= S00;
+        S10 ^= S00;
+        S19 ^= S00;
+        S27 ^= S00;
+        ROR9;
+        SMIX(S00, S01, S02, S03);
+        S04 ^= S00;
+        S10 ^= S00;
+        S19 ^= S00;
+        S28 ^= S00;
+        ROR8;
+        SMIX(S00, S01, S02, S03);
+    }
     S04 ^= S00;
-    S15 ^= S00;
-    SMIX(S15, S16, S17, S18);
-    S19 ^= S15;
-    S01 ^= S15;
-    SMIX(S01, S02, S03, S04);
+    S09 ^= S00;
+    S18 ^= S00;
+    S27 ^= S00;
 
-    S05 ^= S01;
-    S16 ^= S01;
+    hash.h4[0] = SWAP4(S01);
+    hash.h4[1] = SWAP4(S02);
+    hash.h4[2] = SWAP4(S03);
+    hash.h4[3] = SWAP4(S04);
+    hash.h4[4] = SWAP4(S09);
+    hash.h4[5] = SWAP4(S10);
+    hash.h4[6] = SWAP4(S11);
+    hash.h4[7] = SWAP4(S12);
+    hash.h4[8] = SWAP4(S18);
+    hash.h4[9] = SWAP4(S19);
+    hash.h4[10] = SWAP4(S20);
+    hash.h4[11] = SWAP4(S21);
+    hash.h4[12] = SWAP4(S27);
+    hash.h4[13] = SWAP4(S28);
+    hash.h4[14] = SWAP4(S29);
+    hash.h4[15] = SWAP4(S30);
 
-    hash->h4[0] = SWAP4(S01);
-    hash->h4[1] = SWAP4(S02);
-    hash->h4[2] = SWAP4(S03);
-    hash->h4[3] = SWAP4(S04);
-    hash->h4[4] = SWAP4(S09);
-    hash->h4[5] = SWAP4(S10);
-    hash->h4[6] = SWAP4(S11);
-    hash->h4[7] = SWAP4(S12);
-    hash->h4[8] = SWAP4(S18);
-    hash->h4[9] = SWAP4(S19);
-    hash->h4[10] = SWAP4(S20);
-    hash->h4[11] = SWAP4(S21);
-    hash->h4[12] = SWAP4(S27);
-    hash->h4[13] = SWAP4(S28);
-    hash->h4[14] = SWAP4(S29);
-    hash->h4[15] = SWAP4(S30);
+    *hashp = hash;
 
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
@@ -2498,7 +2419,7 @@ __kernel void searchF(__global hash_t* hashes)
 
     ulong W[16] = { 0UL }, SHA512Out[8];
 
-	for(int i = 0; i < 10; ++i) W[i] = DEC64BE(block +  8*i);
+	for(int i = 0; i < 10; ++i) W[i] = DEC64BE(hash.h8[i]);
 
 	W[8] = 0x8000000000000000UL;
 	W[15] = 0x0000000000000200UL;
