@@ -7227,15 +7227,13 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
         timetravel10_twisted_code(result, work->pool->swork.ntime, code);
     }
     else if (work->pool->algorithm.type == ALGO_X16R) {
-      if (cgpu->algorithm.type == ALGO_X16R) {
     	  if (work->data) {
-          x16r_twisted_code((const uint32_t *)thr->work->data, code);
+        x16r_twisted_code((const uint32_t *)work->data, code);
     	  }
         else {
           strcpy(code, "0123456789ABCDEF");
         }
       }
-    }
 
     if (strcmp(code, mythr->curSequence) == 0) {
         algoSwitch = false;
