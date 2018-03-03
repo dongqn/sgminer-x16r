@@ -6683,12 +6683,9 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
   }
 
   return ((work->pool->algorithm.type == ALGO_X11EVO ||
-      work->pool->algorithm.type == ALGO_TIMETRAVEL10)
+      work->pool->algorithm.type == ALGO_TIMETRAVEL10 ||
+      work->pool->algorithm.type == ALGO_X16R)
     && (algoSwitch || !mythr->work));
-  // return ((work->pool->algorithm.type == ALGO_X11EVO ||
-  //     work->pool->algorithm.type == ALGO_TIMETRAVEL10 ||
-  //     work->pool->algorithm.type == ALGO_X16R)
-  //   && (algoSwitch || !mythr->work));
 }
 
 static void twistTheRevolver(struct thr_info *mythr, struct work *work)
