@@ -95,6 +95,7 @@ void (*gpu_autotune) (int, enum dev_enable *);
 #include "algorithm/timetravel10.h"
 #include "algorithm/x16r.h"
 #define DEFAULT_SEQUENCE "0123456789A"
+#define DEFAULT_SEQUENCE_16 "0123456789ABCDEF"
 
 static char packagename[256];
 
@@ -7224,8 +7225,16 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
       evocoin_twisted_code(result, work->pool->swork.ntime, code);
     } else if (work->pool->algorithm.type == ALGO_TIMETRAVEL10) { 
         timetravel10_twisted_code(result, work->pool->swork.ntime, code);
-    } else if (work->pool->algorithm.type == ALGO_X16R) {
-        x16r_twisted_code((const uint32_t* )work->data, code);
+    }
+    else if (work->pool->algorithm.type == ALGO_X16R) {
+      if (cgpu->algorithm.type == ALGO_X16R) {
+    	  if (work->data) {
+          x16r_twisted_code((const uint32_t *)thr->work->data, code);
+    	  }
+        else {
+          strcpy(code, "0123456789ABCDEF");
+        }
+      }
     }
 
     if (strcmp(code, mythr->curSequence) == 0) {
@@ -7236,9 +7245,12 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
     }
 
   return ((work->pool->algorithm.type == ALGO_X11EVO ||
-      work->pool->algorithm.type == ALGO_TIMETRAVEL10 ||
-      work->pool->algorithm.type == ALGO_X16R)
+      work->pool->algorithm.type == ALGO_TIMETRAVEL10)
     && (algoSwitch || !mythr->work));
+  // return ((work->pool->algorithm.type == ALGO_X11EVO ||
+  //     work->pool->algorithm.type == ALGO_TIMETRAVEL10 ||
+  //     work->pool->algorithm.type == ALGO_X16R)
+  //   && (algoSwitch || !mythr->work));
 }
 
 static void twistTheRevolver(struct thr_info *mythr, struct work *work)
@@ -9244,7 +9256,12 @@ static void restart_mining_threads(unsigned int new_n_threads)
       thr->id = k;
       thr->pool_no = pool->pool_no;
       // init sequence
+      if (cgpu->algorithm.type == ALGO_X16R) {
+        strcpy(thr->curSequence, DEFAULT_SEQUENCE_16);
+      }
+      else {
       strcpy(thr->curSequence, DEFAULT_SEQUENCE);
+      }
 
       applog(LOG_DEBUG, "Thread %d set pool = %d (%s)", k, thr->pool_no, isnull(get_pool_name(pools[thr->pool_no]), ""));
       thr->cgpu = cgpu;
