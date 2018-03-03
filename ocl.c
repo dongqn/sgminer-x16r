@@ -534,7 +534,7 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
   /* get a kernel object handle for a kernel with the given name */
   if (algorithm->type == ALGO_X16R) {
     char kernel_name[9]; // max: search9i + 0x0
-    snprintf(kernel_name, 12, "search%ci", thr->curSequence[0]);
+    snprintf(kernel_name, 9, "search%ci", thr->curSequence[0]);
     clState->kernel = clCreateKernel(clState->program, kernel_name, &status);
   }
   else {
@@ -550,6 +550,7 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
   if (clState->n_extra_kernels > 0) {
     unsigned int i;
     char kernel_name[9]; // max: search99 + 0x0
+
     if (algorithm->type == ALGO_X16R) {
       if (clState->n_extra_kernels != strlen(thr->curSequence - 1)) {
         applog(LOG_ERR, "Error: number of kernels (%d) =/= length of algo sequence (%d)",
