@@ -760,7 +760,7 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// cubehash_80
+// cubehash_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -769,7 +769,7 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -783,33 +783,33 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
     sph_u32 xo = SPH_C32(0xD65C8A2B), xp = SPH_C32(0xA5A70E75), xq = SPH_C32(0xB1C62456), xr = SPH_C32(0xBC796576);
     sph_u32 xs = SPH_C32(0x1921C8F7), xt = SPH_C32(0xE7989AF1), xu = SPH_C32(0x7795D246), xv = SPH_C32(0xD43E3B44);
 
-    x0 ^= DEC32BE(block + 4);
-    x1 ^= DEC32BE(block + 0);
-    x2 ^= DEC32BE(block + 12);
-    x3 ^= DEC32BE(block + 8);
-    x4 ^= DEC32BE(block + 20);
-    x5 ^= DEC32BE(block + 16);
-    x6 ^= DEC32BE(block + 28);
-    x7 ^= DEC32BE(block + 24);
+    x0 ^= DEC32LE(block + 0);
+    x1 ^= DEC32LE(block + 4);
+    x2 ^= DEC32LE(block + 8);
+    x3 ^= DEC32LE(block + 12);
+    x4 ^= DEC32LE(block + 16);
+    x5 ^= DEC32LE(block + 20);
+    x6 ^= DEC32LE(block + 24);
+    x7 ^= DEC32LE(block + 28);
 
     for (int i = 0; i < 13; i++) {
         SIXTEEN_ROUNDS;
 
         if (i == 0) {
-            x0 ^= DEC32BE(block + 36);
-            x1 ^= DEC32BE(block + 32);
-            x2 ^= DEC32BE(block + 44);
-            x3 ^= DEC32BE(block + 40);
-            x4 ^= DEC32BE(block + 52);
-            x5 ^= DEC32BE(block + 48);
-            x6 ^= DEC32BE(block + 60);
-            x7 ^= DEC32BE(block + 56);
+            x0 ^= DEC32LE(block + 32);
+            x1 ^= DEC32LE(block + 36);
+            x2 ^= DEC32LE(block + 40);
+            x3 ^= DEC32LE(block + 44);
+            x4 ^= DEC32LE(block + 48);
+            x5 ^= DEC32LE(block + 52);
+            x6 ^= DEC32LE(block + 56);
+            x7 ^= DEC32LE(block + 60);
         }
         else if (i == 1) {
-            x0 ^= DEC32BE(block + 68);
-            x1 ^= DEC32BE(block + 64);
-            x2 ^= DEC32BE(block + 76);
-            x3 ^= DEC32BE(block + 72);
+            x0 ^= DEC32LE(block + 64);
+            x1 ^= DEC32LE(block + 68);
+            x2 ^= DEC32LE(block + 72);
+            // x3 ^= DEC32LE(block + 76);
             x3 ^= SWAP4(gid);
             x4 ^= 0x80;
         }
@@ -837,7 +837,7 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("cubehash_80 output: ");
+        printf("cubehash_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -2012,7 +2012,7 @@ __kernel void search6(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// cubehash
+// cubehash - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search7(__global hash_t* hashes)
 {
@@ -2028,27 +2028,27 @@ __kernel void search7(__global hash_t* hashes)
     sph_u32 xo = SPH_C32(0xD65C8A2B), xp = SPH_C32(0xA5A70E75), xq = SPH_C32(0xB1C62456), xr = SPH_C32(0xBC796576);
     sph_u32 xs = SPH_C32(0x1921C8F7), xt = SPH_C32(0xE7989AF1), xu = SPH_C32(0x7795D246), xv = SPH_C32(0xD43E3B44);
 
-    x0 ^= SWAP4(hash->h4[1]);
-    x1 ^= SWAP4(hash->h4[0]);
-    x2 ^= SWAP4(hash->h4[3]);
-    x3 ^= SWAP4(hash->h4[2]);
-    x4 ^= SWAP4(hash->h4[5]);
-    x5 ^= SWAP4(hash->h4[4]);
-    x6 ^= SWAP4(hash->h4[7]);
-    x7 ^= SWAP4(hash->h4[6]);
+    x0 ^= hash->h4[0];
+    x1 ^= hash->h4[1];
+    x2 ^= hash->h4[2];
+    x3 ^= hash->h4[3];
+    x4 ^= hash->h4[4];
+    x5 ^= hash->h4[5];
+    x6 ^= hash->h4[6];
+    x7 ^= hash->h4[7];
 
     for (int i = 0; i < 13; i ++) {
         SIXTEEN_ROUNDS;
 
         if (i == 0) {
-            x0 ^= SWAP4(hash->h4[9]);
-            x1 ^= SWAP4(hash->h4[8]);
-            x2 ^= SWAP4(hash->h4[11]);
-            x3 ^= SWAP4(hash->h4[10]);
-            x4 ^= SWAP4(hash->h4[13]);
-            x5 ^= SWAP4(hash->h4[12]);
-            x6 ^= SWAP4(hash->h4[15]);
-            x7 ^= SWAP4(hash->h4[14]);
+            x0 ^= hash->h4[8];
+            x1 ^= hash->h4[9];
+            x2 ^= hash->h4[10];
+            x3 ^= hash->h4[11];
+            x4 ^= hash->h4[12];
+            x5 ^= hash->h4[13];
+            x6 ^= hash->h4[14];
+            x7 ^= hash->h4[15];
         } else if(i == 1) {
             x0 ^= 0x80;
         } else if (i == 2) {
@@ -2075,7 +2075,7 @@ __kernel void search7(__global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("cubehash output: ");
+        printf("cubehash output: \n");
         printhash(*hash);
     }
     #endif
