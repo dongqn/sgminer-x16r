@@ -676,7 +676,7 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// luffa_80
+// luffa_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -685,7 +685,7 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -726,33 +726,34 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
             M1 = DEC32BE(block + 68);
             M2 = DEC32BE(block + 72);
             M3 = SWAP4(gid);
+            // M3 = DEC32BE(block + 76);
             M4 = 0x80000000;
             M5 = M6 = M7 = 0;
         } else if(i == 2) {
             M0 = M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
         } else if(i == 3) {
-            hash->h4[1] = V00 ^ V10 ^ V20 ^ V30 ^ V40;
-            hash->h4[0] = V01 ^ V11 ^ V21 ^ V31 ^ V41;
-            hash->h4[3] = V02 ^ V12 ^ V22 ^ V32 ^ V42;
-            hash->h4[2] = V03 ^ V13 ^ V23 ^ V33 ^ V43;
-            hash->h4[5] = V04 ^ V14 ^ V24 ^ V34 ^ V44;
-            hash->h4[4] = V05 ^ V15 ^ V25 ^ V35 ^ V45;
-            hash->h4[7] = V06 ^ V16 ^ V26 ^ V36 ^ V46;
-            hash->h4[6] = V07 ^ V17 ^ V27 ^ V37 ^ V47;
+            hash->h4[0] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
+            hash->h4[1] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
+            hash->h4[2] = SWAP4(V02 ^ V12 ^ V22 ^ V32 ^ V42);
+            hash->h4[3] = SWAP4(V03 ^ V13 ^ V23 ^ V33 ^ V43);
+            hash->h4[4] = SWAP4(V04 ^ V14 ^ V24 ^ V34 ^ V44);
+            hash->h4[5] = SWAP4(V05 ^ V15 ^ V25 ^ V35 ^ V45);
+            hash->h4[6] = SWAP4(V06 ^ V16 ^ V26 ^ V36 ^ V46);
+            hash->h4[7] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
         }
     }
-    hash->h4[9] = V00 ^ V10 ^ V20 ^ V30 ^ V40;
-    hash->h4[8] = V01 ^ V11 ^ V21 ^ V31 ^ V41;
-    hash->h4[11] = V02 ^ V12 ^ V22 ^ V32 ^ V42;
-    hash->h4[10] = V03 ^ V13 ^ V23 ^ V33 ^ V43;
-    hash->h4[13] = V04 ^ V14 ^ V24 ^ V34 ^ V44;
-    hash->h4[12] = V05 ^ V15 ^ V25 ^ V35 ^ V45;
-    hash->h4[15] = V06 ^ V16 ^ V26 ^ V36 ^ V46;
-    hash->h4[14] = V07 ^ V17 ^ V27 ^ V37 ^ V47;
+    hash->h4[8] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
+    hash->h4[9] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
+    hash->h4[10] = SWAP4(V02 ^ V12 ^ V22 ^ V32 ^ V42);
+    hash->h4[11] = SWAP4(V03 ^ V13 ^ V23 ^ V33 ^ V43);
+    hash->h4[12] = SWAP4(V04 ^ V14 ^ V24 ^ V34 ^ V44);
+    hash->h4[13] = SWAP4(V05 ^ V15 ^ V25 ^ V35 ^ V45);
+    hash->h4[14] = SWAP4(V06 ^ V16 ^ V26 ^ V36 ^ V46);
+    hash->h4[15] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("luffa_80 output: ");
+        printf("luffa_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -1938,8 +1939,8 @@ __kernel void search5(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// luffa
-__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+// luffa - WORKS
+// __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search6(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
@@ -1953,14 +1954,14 @@ __kernel void search6(__global hash_t* hashes)
 
     DECL_TMP8(M);
 
-    M0 = hash->h4[1];
-    M1 = hash->h4[0];
-    M2 = hash->h4[3];
-    M3 = hash->h4[2];
-    M4 = hash->h4[5];
-    M5 = hash->h4[4];
-    M6 = hash->h4[7];
-    M7 = hash->h4[6];
+    M0 = SWAP4(hash->h4[0]);
+    M1 = SWAP4(hash->h4[1]);
+    M2 = SWAP4(hash->h4[2]);
+    M3 = SWAP4(hash->h4[3]);
+    M4 = SWAP4(hash->h4[4]);
+    M5 = SWAP4(hash->h4[5]);
+    M6 = SWAP4(hash->h4[6]);
+    M7 = SWAP4(hash->h4[7]);
 
     for(uint i = 0; i < 5; i++)
     {
@@ -1968,43 +1969,43 @@ __kernel void search6(__global hash_t* hashes)
         LUFFA_P5;
 
         if(i == 0) {
-            M0 = hash->h4[9];
-            M1 = hash->h4[8];
-            M2 = hash->h4[11];
-            M3 = hash->h4[10];
-            M4 = hash->h4[13];
-            M5 = hash->h4[12];
-            M6 = hash->h4[15];
-            M7 = hash->h4[14];
+            M0 = SWAP4(hash->h4[8]);
+            M1 = SWAP4(hash->h4[9]);
+            M2 = SWAP4(hash->h4[10]);
+            M3 = SWAP4(hash->h4[11]);
+            M4 = SWAP4(hash->h4[12]);
+            M5 = SWAP4(hash->h4[13]);
+            M6 = SWAP4(hash->h4[14]);
+            M7 = SWAP4(hash->h4[15]);
         } else if(i == 1) {
             M0 = 0x80000000;
             M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
         } else if(i == 2) {
             M0 = M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
         } else if(i == 3) {
-            hash->h4[1] = V00 ^ V10 ^ V20 ^ V30 ^ V40;
-            hash->h4[0] = V01 ^ V11 ^ V21 ^ V31 ^ V41;
-            hash->h4[3] = V02 ^ V12 ^ V22 ^ V32 ^ V42;
-            hash->h4[2] = V03 ^ V13 ^ V23 ^ V33 ^ V43;
-            hash->h4[5] = V04 ^ V14 ^ V24 ^ V34 ^ V44;
-            hash->h4[4] = V05 ^ V15 ^ V25 ^ V35 ^ V45;
-            hash->h4[7] = V06 ^ V16 ^ V26 ^ V36 ^ V46;
-            hash->h4[6] = V07 ^ V17 ^ V27 ^ V37 ^ V47;
+            hash->h4[0] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
+            hash->h4[1] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
+            hash->h4[2] = SWAP4(V02 ^ V12 ^ V22 ^ V32 ^ V42);
+            hash->h4[3] = SWAP4(V03 ^ V13 ^ V23 ^ V33 ^ V43);
+            hash->h4[4] = SWAP4(V04 ^ V14 ^ V24 ^ V34 ^ V44);
+            hash->h4[5] = SWAP4(V05 ^ V15 ^ V25 ^ V35 ^ V45);
+            hash->h4[6] = SWAP4(V06 ^ V16 ^ V26 ^ V36 ^ V46);
+            hash->h4[7] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
         }
     }
 
-    hash->h4[9] = V00 ^ V10 ^ V20 ^ V30 ^ V40;
-    hash->h4[8] = V01 ^ V11 ^ V21 ^ V31 ^ V41;
-    hash->h4[11] = V02 ^ V12 ^ V22 ^ V32 ^ V42;
-    hash->h4[10] = V03 ^ V13 ^ V23 ^ V33 ^ V43;
-    hash->h4[13] = V04 ^ V14 ^ V24 ^ V34 ^ V44;
-    hash->h4[12] = V05 ^ V15 ^ V25 ^ V35 ^ V45;
-    hash->h4[15] = V06 ^ V16 ^ V26 ^ V36 ^ V46;
-    hash->h4[14] = V07 ^ V17 ^ V27 ^ V37 ^ V47;
+    hash->h4[8] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
+    hash->h4[9] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
+    hash->h4[10] = SWAP4(V02 ^ V12 ^ V22 ^ V32 ^ V42);
+    hash->h4[11] = SWAP4(V03 ^ V13 ^ V23 ^ V33 ^ V43);
+    hash->h4[12] = SWAP4(V04 ^ V14 ^ V24 ^ V34 ^ V44);
+    hash->h4[13] = SWAP4(V05 ^ V15 ^ V25 ^ V35 ^ V45);
+    hash->h4[14] = SWAP4(V06 ^ V16 ^ V26 ^ V36 ^ V46);
+    hash->h4[15] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("luffa output: ");
+        printf("luffa output: \n");
         printhash(*hash);
     }
     #endif
