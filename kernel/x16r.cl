@@ -1235,7 +1235,7 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// fugue_80
+// fugue_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1244,7 +1244,7 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -1253,8 +1253,7 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     __local sph_u32 mixtab0[256], mixtab1[256], mixtab2[256], mixtab3[256];
     int init = get_local_id(0);
     int step = get_local_size(0);
-    for (int i = init; i < 256; i += step)
-    {
+    for (int i = init; i < 256; i += step) {
         mixtab0[i] = mixtab0_c[i];
         mixtab1[i] = mixtab1_c[i];
         mixtab2[i] = mixtab2_c[i];
@@ -1262,7 +1261,6 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
-
 
     sph_u32 S00, S01, S02, S03, S04, S05, S06, S07, S08, S09;
     sph_u32 S10, S11, S12, S13, S14, S15, S16, S17, S18, S19;
@@ -1281,8 +1279,11 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     FUGUE512_3((DEC32BE(block+36)), (DEC32BE(block+40)), (DEC32BE(block+44)));
     FUGUE512_3((DEC32BE(block+48)), (DEC32BE(block+52)), (DEC32BE(block+56)));
     FUGUE512_3((DEC32BE(block+60)), (DEC32BE(block+64)), (DEC32BE(block+68)));
-    FUGUE512_F((DEC32BE(block+72)), (((DEC32BE(block+76))<<8) ^ SWAP4(gid)),
-        0, (80<<3));
+    // FUGUE512_F((DEC32BE(block+72)), (DEC32BE(block+76)), 0, (80<<3));
+    FUGUE512_F((DEC32BE(block+72)), (SWAP4(gid)), 0, (80<<3));
+
+    ROR3;
+    ROR9;
 
     // apply round shift if necessary
     int i;
@@ -1323,26 +1324,26 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     S18 ^= S00;
     S27 ^= S00;
 
-    hash->h4[0] = S01;
-    hash->h4[1] = S02;
-    hash->h4[2] = S03;
-    hash->h4[3] = S04;
-    hash->h4[4] = S09;
-    hash->h4[5] = S10;
-    hash->h4[6] = S11;
-    hash->h4[7] = S12;
-    hash->h4[8] = S18;
-    hash->h4[9] = S19;
-    hash->h4[10] = S20;
-    hash->h4[11] = S21;
-    hash->h4[12] = S27;
-    hash->h4[13] = S28;
-    hash->h4[14] = S29;
-    hash->h4[15] = S30;
+    hash->h4[0] = SWAP4(S01);
+    hash->h4[1] = SWAP4(S02);
+    hash->h4[2] = SWAP4(S03);
+    hash->h4[3] = SWAP4(S04);
+    hash->h4[4] = SWAP4(S09);
+    hash->h4[5] = SWAP4(S10);
+    hash->h4[6] = SWAP4(S11);
+    hash->h4[7] = SWAP4(S12);
+    hash->h4[8] = SWAP4(S18);
+    hash->h4[9] = SWAP4(S19);
+    hash->h4[10] = SWAP4(S20);
+    hash->h4[11] = SWAP4(S21);
+    hash->h4[12] = SWAP4(S27);
+    hash->h4[13] = SWAP4(S28);
+    hash->h4[14] = SWAP4(S29);
+    hash->h4[15] = SWAP4(S30);
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("fugue_80 output: ");
+        printf("fugue_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -1410,8 +1411,8 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     M0 = DEC32LE(block +  64);
     M1 = DEC32LE(block +  68);
     M3 = DEC32LE(block +  76);
-    M2 = 0;
-    // M2 = SWAP4(gid);
+    // TODO: check this works
+    M2 = SWAP4(gid);
     M4 = 0x80;
     M5 = M6 = M7 = M8 = M9 = MA = MB = MC = MD = ME = MF = 0;
 
@@ -2437,7 +2438,7 @@ __kernel void searchB(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// fugue
+// fugue - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchC(__global hash_t* hashes)
 {
@@ -2450,20 +2451,18 @@ __kernel void searchC(__global hash_t* hashes)
     __local sph_u32 mixtab0[256], mixtab1[256], mixtab2[256], mixtab3[256];
     int init = get_local_id(0);
     int step = get_local_size(0);
-    for (int i = init; i < 256; i += step)
-    {
+    for (int i = init; i < 256; i += step) {
         mixtab0[i] = mixtab0_c[i];
         mixtab1[i] = mixtab1_c[i];
         mixtab2[i] = mixtab2_c[i];
         mixtab3[i] = mixtab3_c[i];
     }
 
-    for (int i = 0; i < 8; i++) {
-        hash.h8[i] = hashp->h8[i];
-    }
-
     barrier(CLK_LOCAL_MEM_FENCE);
 
+    for (int i = 0; i < 16; i++) {
+        hash.h4[i] = SWAP4(hashp->h4[i]);
+    }
 
     sph_u32 S00, S01, S02, S03, S04, S05, S06, S07, S08, S09;
     sph_u32 S10, S11, S12, S13, S14, S15, S16, S17, S18, S19;
@@ -2545,7 +2544,7 @@ __kernel void searchC(__global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("fugue output: ");
+        printf("fugue output: \n");
         printhash(*hashp);
     }
     #endif
