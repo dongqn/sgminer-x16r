@@ -942,7 +942,7 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// simd_80
+// simd_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -951,17 +951,17 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
 
     s32 q[256];
     unsigned char x[128];
-    for(unsigned int i = 0; i < 20; i++)
-        ((sph_u32*)x)[i] = DEC64BE(block + i*4);
-    ((sph_u32*)x)[19] ^= SWAP4(gid);
-    for(unsigned int i = 64; i < 128; i++)
+    for(unsigned int i = 0; i < 80; i++)
+        x[i] = block[i];
+    // ((sph_u32*)x)[19] = SWAP4(gid);
+    for(unsigned int i = 80; i < 128; i++)
         x[i] = 0;
 
     u32 A0 = C32(0x0BA16B95), A1 = C32(0x72F999AD), A2 = C32(0x9FECC2AE), A3 = C32(0xBA3264FC), A4 = C32(0x5E894929), A5 = C32(0x8E9F30E5), A6 = C32(0x2F1DAA37), A7 = C32(0xF0F2C558);
@@ -971,34 +971,33 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
 
     FFT256(0, 1, 0, ll1);
     for (int i = 0; i < 256; i ++) {
-        s32 tq;
-        tq = q[i] + yoff_b_n[i];
+        s32 tq = q[i] + yoff_b_n[i];
         tq = REDS2(tq);
         tq = REDS1(tq);
         tq = REDS1(tq);
         q[i] = (tq <= 128 ? tq : tq - 257);
     }
 
-    A0 ^= DEC64BE(block +  0);
-    A1 ^= DEC64BE(block +  4);
-    A2 ^= DEC64BE(block +  8);
-    A3 ^= DEC64BE(block + 12);
-    A4 ^= DEC64BE(block + 16);
-    A5 ^= DEC64BE(block + 20);
-    A6 ^= DEC64BE(block + 24);
-    A7 ^= DEC64BE(block + 32);
-    B0 ^= DEC64BE(block + 36);
-    B1 ^= DEC64BE(block + 40);
-    B2 ^= DEC64BE(block + 44);
-    B3 ^= DEC64BE(block + 44);
-    B4 ^= DEC64BE(block + 48);
-    B5 ^= DEC64BE(block + 52);
-    B6 ^= DEC64BE(block + 56);
-    B7 ^= DEC64BE(block + 60);
-    C0 ^= DEC64BE(block + 64);
-    C1 ^= DEC64BE(block + 68);
-    C2 ^= DEC64BE(block + 72);
-    C3 ^= DEC64BE(block + 76);
+    A0 ^= DEC32LE(block +  0);
+    A1 ^= DEC32LE(block +  4);
+    A2 ^= DEC32LE(block +  8);
+    A3 ^= DEC32LE(block + 12);
+    A4 ^= DEC32LE(block + 16);
+    A5 ^= DEC32LE(block + 20);
+    A6 ^= DEC32LE(block + 24);
+    A7 ^= DEC32LE(block + 28);
+    B0 ^= DEC32LE(block + 32);
+    B1 ^= DEC32LE(block + 36);
+    B2 ^= DEC32LE(block + 40);
+    B3 ^= DEC32LE(block + 44);
+    B4 ^= DEC32LE(block + 48);
+    B5 ^= DEC32LE(block + 52);
+    B6 ^= DEC32LE(block + 56);
+    B7 ^= DEC32LE(block + 60);
+    C0 ^= DEC32LE(block + 64);
+    C1 ^= DEC32LE(block + 68);
+    C2 ^= DEC32LE(block + 72);
+    C3 ^= DEC32LE(block + 76);
 
     ONE_ROUND_BIG(0_, 0,  3, 23, 17, 27);
     ONE_ROUND_BIG(1_, 1, 28, 19, 22,  7);
@@ -1006,24 +1005,24 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     ONE_ROUND_BIG(3_, 3,  4, 13, 10, 25);
 
     STEP_BIG(
-    C32(0x0BA16B95), C32(0x72F999AD), C32(0x9FECC2AE), C32(0xBA3264FC),
-    C32(0x5E894929), C32(0x8E9F30E5), C32(0x2F1DAA37), C32(0xF0F2C558),
-    IF,  4, 13, PP8_4_);
+        C32(0x0BA16B95), C32(0x72F999AD), C32(0x9FECC2AE), C32(0xBA3264FC),
+        C32(0x5E894929), C32(0x8E9F30E5), C32(0x2F1DAA37), C32(0xF0F2C558),
+        IF,  4, 13, PP8_4_);
 
     STEP_BIG(
-    C32(0xAC506643), C32(0xA90635A5), C32(0xE25B878B), C32(0xAAB7878F),
-    C32(0x88817F7A), C32(0x0A02892B), C32(0x559A7550), C32(0x598F657E),
-    IF, 13, 10, PP8_5_);
+        C32(0xAC506643), C32(0xA90635A5), C32(0xE25B878B), C32(0xAAB7878F),
+        C32(0x88817F7A), C32(0x0A02892B), C32(0x559A7550), C32(0x598F657E),
+        IF, 13, 10, PP8_5_);
 
     STEP_BIG(
-    C32(0x7EEF60A1), C32(0x6B70E3E8), C32(0x9C1714D1), C32(0xB958E2A8),
-    C32(0xAB02675E), C32(0xED1C014F), C32(0xCD8D65BB), C32(0xFDB7A257),
-    IF, 10, 25, PP8_6_);
+        C32(0x7EEF60A1), C32(0x6B70E3E8), C32(0x9C1714D1), C32(0xB958E2A8),
+        C32(0xAB02675E), C32(0xED1C014F), C32(0xCD8D65BB), C32(0xFDB7A257),
+        IF, 10, 25, PP8_6_);
 
     STEP_BIG(
-    C32(0x09254899), C32(0xD699C7BC), C32(0x9019B6DC), C32(0x2B9022E4),
-    C32(0x8FA14956), C32(0x21BF9BD3), C32(0xB94D0943), C32(0x6FFDDC22),
-    IF, 25,  4, PP8_0_);
+        C32(0x09254899), C32(0xD699C7BC), C32(0x9019B6DC), C32(0x2B9022E4),
+        C32(0x8FA14956), C32(0x21BF9BD3), C32(0xB94D0943), C32(0x6FFDDC22),
+        IF, 25,  4, PP8_0_);
 
     // Second round
 
@@ -1032,7 +1031,7 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     u32 COPY_C0 = C0, COPY_C1 = C1, COPY_C2 = C2, COPY_C3 = C3, COPY_C4 = C4, COPY_C5 = C5, COPY_C6 = C6, COPY_C7 = C7;
     u32 COPY_D0 = D0, COPY_D1 = D1, COPY_D2 = D2, COPY_D3 = D3, COPY_D4 = D4, COPY_D5 = D5, COPY_D6 = D6, COPY_D7 = D7;
 
-    #define q SIMD_Q
+    #define q SIMD_Q_80
 
     A0 ^= 0x280; // bitlen
 
@@ -1042,24 +1041,24 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     ONE_ROUND_BIG(3_, 3,  4, 13, 10, 25);
 
     STEP_BIG(
-    COPY_A0, COPY_A1, COPY_A2, COPY_A3,
-    COPY_A4, COPY_A5, COPY_A6, COPY_A7,
-    IF,  4, 13, PP8_4_);
+        COPY_A0, COPY_A1, COPY_A2, COPY_A3,
+        COPY_A4, COPY_A5, COPY_A6, COPY_A7,
+        IF,  4, 13, PP8_4_);
 
     STEP_BIG(
-    COPY_B0, COPY_B1, COPY_B2, COPY_B3,
-    COPY_B4, COPY_B5, COPY_B6, COPY_B7,
-    IF, 13, 10, PP8_5_);
+        COPY_B0, COPY_B1, COPY_B2, COPY_B3,
+        COPY_B4, COPY_B5, COPY_B6, COPY_B7,
+        IF, 13, 10, PP8_5_);
 
     STEP_BIG(
-    COPY_C0, COPY_C1, COPY_C2, COPY_C3,
-    COPY_C4, COPY_C5, COPY_C6, COPY_C7,
-    IF, 10, 25, PP8_6_);
+        COPY_C0, COPY_C1, COPY_C2, COPY_C3,
+        COPY_C4, COPY_C5, COPY_C6, COPY_C7,
+        IF, 10, 25, PP8_6_);
 
     STEP_BIG(
-    COPY_D0, COPY_D1, COPY_D2, COPY_D3,
-    COPY_D4, COPY_D5, COPY_D6, COPY_D7,
-    IF, 25,  4, PP8_0_);
+        COPY_D0, COPY_D1, COPY_D2, COPY_D3,
+        COPY_D4, COPY_D5, COPY_D6, COPY_D7,
+        IF, 25,  4, PP8_0_);
 
     #undef q
 
@@ -1082,7 +1081,7 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("simd_80 output: ");
+        printf("simd_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -2169,7 +2168,7 @@ __kernel void search8(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// simd
+// simd - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search9(__global hash_t* hashes)
 {
@@ -2288,7 +2287,7 @@ __kernel void search9(__global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("simd output: ");
+        printf("simd output: \n");
         printhash(*hash);
     }
     #endif
