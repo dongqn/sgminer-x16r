@@ -1568,7 +1568,7 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// sha512_80
+// sha512_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1577,7 +1577,7 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -1595,11 +1595,11 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 
     SHA512Block(W, SHA512Out);
 
-    for(int i = 0; i < 8; ++i) hash->h8[i] = SHA512Out[i];
+    for(int i = 0; i < 8; ++i) hash->h8[i] = SWAP8(SHA512Out[i]);
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("sha512_80 output: ");
+        printf("sha512_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -2735,19 +2735,19 @@ __kernel void searchE(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// sha512
+// sha512 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchF(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
-    ulong W[16] = { 0UL }, SHA512Out[8];
+    sph_u64 W[16] = { 0UL }, SHA512Out[8];
 
-    for(int i = 0; i < 10; ++i) W[i] = DEC64BE(hash->h8[i]);
+    for(int i = 0; i < 8; ++i) W[i] = SWAP8(hash->h8[i]);
 
-    W[8] = 0x8000000000000000UL;
-    W[15] = 0x0000000000000200UL;
+    W[8] = 0x8000000000000000;
+    W[15] = 0x200;
 
     for(int i = 0; i < 8; ++i) SHA512Out[i] = SHA512_INIT[i];
 
@@ -2757,7 +2757,7 @@ __kernel void searchF(__global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("sha512 output: ");
+        printf("sha512 output: \n");
         printhash(*hash);
     }
     #endif
