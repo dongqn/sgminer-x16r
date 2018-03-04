@@ -1185,7 +1185,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
 }
 
 // hamsi_80 - WORKS
-// __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
@@ -1940,7 +1940,7 @@ __kernel void search5(__global hash_t* hashes)
 }
 
 // luffa - WORKS
-// __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search6(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
@@ -2389,7 +2389,7 @@ __kernel void searchA(__global hash_t* hashes)
 }
 
 // hamsi - WORKS
-// __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchB(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
@@ -2553,7 +2553,7 @@ __kernel void searchC(__global hash_t* hashes)
 }
 
 // shabal - WORKS
-// __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchD(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
