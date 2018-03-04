@@ -216,7 +216,7 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// bmw_80
+// bmw_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -225,31 +225,34 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
 
     sph_u64 BMW_H[16];
     for(unsigned u = 0; u < 16; u++)
-            BMW_H[u] = BMW_IV512[u];
+        BMW_H[u] = BMW_IV512[u];
 
     sph_u64 BMW_h1[16], BMW_h2[16];
     sph_u64 mv[16];
 
-    mv[ 0] = DEC64BE(block +   0);
-    mv[ 1] = DEC64BE(block +   8);
-    mv[ 2] = DEC64BE(block +  16);
-    mv[ 3] = DEC64BE(block +  24);
-    mv[ 4] = DEC64BE(block +  32);
-    mv[ 5] = DEC64BE(block +  40);
-    mv[ 6] = DEC64BE(block +  48);
-    mv[ 7] = DEC64BE(block +  56);
-    mv[ 8] = DEC64BE(block +  64);
-    mv[ 9] = DEC64BE(block +  72);
-    mv[ 9] &= 0xFFFFFFFF00000000;
-    mv[ 9] ^= SWAP4(gid);
-    mv[10] = 0x8000000000000000;
+    mv[ 0] = DEC64LE(block +   0);
+    mv[ 1] = DEC64LE(block +   8);
+    mv[ 2] = DEC64LE(block +  16);
+    mv[ 3] = DEC64LE(block +  24);
+    mv[ 4] = DEC64LE(block +  32);
+    mv[ 5] = DEC64LE(block +  40);
+    mv[ 6] = DEC64LE(block +  48);
+    mv[ 7] = DEC64LE(block +  56);
+    mv[ 8] = DEC64LE(block +  64);
+    mv[ 9] = DEC64LE(block +  72);
+
+    // TODO: check this
+    mv[ 9] &= 0x00000000FFFFFFFF;
+    mv[ 9] ^= SWAP4(gid) << 8;
+
+    mv[10] = 0x80;
     mv[11] = 0;
     mv[12] = 0;
     mv[13] = 0;
@@ -287,7 +290,7 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("bmw_80 output: ");
+        printf("bmw_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -1642,7 +1645,7 @@ __kernel void search0(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// bmw
+// bmw - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search1(__global hash_t* hashes)
 {
@@ -1656,14 +1659,14 @@ __kernel void search1(__global hash_t* hashes)
     sph_u64 BMW_h1[16], BMW_h2[16];
     sph_u64 mv[16];
 
-    mv[0] = SWAP8(hash->h8[0]);
-    mv[1] = SWAP8(hash->h8[1]);
-    mv[2] = SWAP8(hash->h8[2]);
-    mv[3] = SWAP8(hash->h8[3]);
-    mv[4] = SWAP8(hash->h8[4]);
-    mv[5] = SWAP8(hash->h8[5]);
-    mv[6] = SWAP8(hash->h8[6]);
-    mv[7] = SWAP8(hash->h8[7]);
+    mv[0] = hash->h8[0];
+    mv[1] = hash->h8[1];
+    mv[2] = hash->h8[2];
+    mv[3] = hash->h8[3];
+    mv[4] = hash->h8[4];
+    mv[5] = hash->h8[5];
+    mv[6] = hash->h8[6];
+    mv[7] = hash->h8[7];
     mv[8] = 0x80;
     mv[9] = 0;
     mv[10] = 0;
@@ -1692,18 +1695,18 @@ __kernel void search1(__global hash_t* hashes)
     #undef H
     #undef dH
 
-    hash->h8[0] = SWAP8(BMW_h1[8]);
-    hash->h8[1] = SWAP8(BMW_h1[9]);
-    hash->h8[2] = SWAP8(BMW_h1[10]);
-    hash->h8[3] = SWAP8(BMW_h1[11]);
-    hash->h8[4] = SWAP8(BMW_h1[12]);
-    hash->h8[5] = SWAP8(BMW_h1[13]);
-    hash->h8[6] = SWAP8(BMW_h1[14]);
-    hash->h8[7] = SWAP8(BMW_h1[15]);
+    hash->h8[0] = BMW_h1[8];
+    hash->h8[1] = BMW_h1[9];
+    hash->h8[2] = BMW_h1[10];
+    hash->h8[3] = BMW_h1[11];
+    hash->h8[4] = BMW_h1[12];
+    hash->h8[5] = BMW_h1[13];
+    hash->h8[6] = BMW_h1[14];
+    hash->h8[7] = BMW_h1[15];
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("bmw output: ");
+        printf("bmw output: \n");
         printhash(*hash);
     }
     #endif
