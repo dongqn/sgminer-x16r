@@ -248,9 +248,8 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
     mv[ 8] = DEC64LE(block +  64);
     mv[ 9] = DEC64LE(block +  72);
 
-    // TODO: check this
     mv[ 9] &= 0x00000000FFFFFFFF;
-    mv[ 9] ^= SWAP4(gid) << 8;
+    mv[ 9] ^= ((sph_u64) gid) << 32;
 
     mv[10] = 0x80;
     mv[11] = 0;
@@ -329,9 +328,8 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     m[8] = DEC64LE(block + 8 * 8);
     m[9] = DEC64LE(block + 9 * 8);
 
-    // TODO: check this
     m[9] &= 0x00000000FFFFFFFF;
-    m[9] ^= SWAP4(gid)<<8;
+    m[9] ^= ((sph_u64) gid) << 32;
 
     for (unsigned int u = 0; u < 16; u ++)
         g[u] = m[u] ^ H[u];
@@ -409,16 +407,14 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
             h7l ^= DEC64LE(block + 56);
 
             h0h ^= DEC64LE(block + 64);
-            // h0l ^= DEC64LE(block + 72);
-            // TODO: Check this works
-            h4l ^= (DEC64LE(block + 72) & 0x00000000FFFFFFFF)^(SWAP4(gid)<<8);
+            h4l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF
+            h4l ^= ((sph_u64) gid) << 32;
             h1h ^= 0x80;
         }
         else if (i == 2) {
             h4h ^= DEC64LE(block + 64);
-            // h4l ^= DEC64LE(block + 72);
-            // TODO: Check this works
-            h4l ^= (DEC64LE(block + 72) & 0x00000000FFFFFFFF)^(SWAP4(gid)<<8);
+            h4l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF;
+            h4l ^= ((sph_u64) gid) << 32;
             h5h ^= 0x80;
             h3l ^= 0x8002000000000000;
         }
@@ -484,8 +480,8 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
     a31 ^= DEC64LE(block + 64);
     KECCAK_F_1600;
 
-    // TODO: check this works
-    a00 ^= (DEC64LE(block + 72) & 0x00000000FFFFFFFF)^(SWAP4(gid)<<8);
+    a00 ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF;
+    a00 ^= ((sph_u64) gid) << 32;
     a10 ^= 1;
     a31 ^= 0x8000000000000000;
     KECCAK_F_1600;
@@ -539,7 +535,7 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
     M7 = DEC64LE(block + 56);
     M8 = DEC64LE(block + 64);
     M9 = DEC64LE(block + 72);
-    ((uint*)&M9)[1] = SWAP4(gid);
+    ((uint*)&M9)[1] = gid;
 
     sph_u64 h0 = SPH_C64(0x4903ADFF749C51CE);
     sph_u64 h1 = SPH_C64(0x0D95DE399746DF03);
@@ -810,7 +806,7 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
             x1 ^= DEC32LE(block + 68);
             x2 ^= DEC32LE(block + 72);
             // x3 ^= DEC32LE(block + 76);
-            x3 ^= SWAP4(gid);
+            x3 ^= gid;
             x4 ^= 0x80;
         }
         else if (i == 2) {
@@ -907,7 +903,7 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
     rk11 = DEC32LE(block + 68);
     rk12 = DEC32LE(block + 72);
     // rk13 = DEC32LE(block + 76);
-    rk13 = SWAP4(gid);
+    rk13 = gid;
     rk14 = 0x80;
     rk15 = rk16 = rk17 = rk18 = rk19 = rk1A = 0;
     rk1B = 0x2800000;
@@ -960,7 +956,7 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     unsigned char x[128];
     for(unsigned int i = 0; i < 80; i++)
         x[i] = block[i];
-    // ((sph_u32*)x)[19] = SWAP4(gid);
+    ((sph_u32*)x)[19] = gid;
     for(unsigned int i = 80; i < 128; i++)
         x[i] = 0;
 
@@ -1153,8 +1149,8 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     WB1 = DEC64LE(block +  56);
     WC0 = DEC64LE(block +  64);
     WC1 = DEC64LE(block +  72);
-    // WC1 &= 0xFFFFFFFF00000000;
-    // WC1 ^= SWAP4(gid);
+    WC1 &= 0x00000000FFFFFFFF;
+    WC1 ^= ((sph_u64) gid) << 32;
     WD0 = 0x80;
     WD1 = 0;
     WE0 = 0;
@@ -1412,8 +1408,7 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     M0 = DEC32LE(block +  64);
     M1 = DEC32LE(block +  68);
     M3 = DEC32LE(block +  76);
-    // TODO: check this works
-    M2 = SWAP4(gid);
+    M2 = gid;
     M4 = 0x80;
     M5 = M6 = M7 = M8 = M9 = MA = MB = MC = MD = ME = MF = 0;
 
