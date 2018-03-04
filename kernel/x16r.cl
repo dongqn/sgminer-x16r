@@ -512,7 +512,7 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// skein_80
+// skein_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -521,7 +521,7 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -529,16 +529,16 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
     sph_u64 M0, M1, M2, M3, M4, M5, M6, M7;
     sph_u64 M8, M9;
 
-    M0 = DEC64BE(block + 0);
-    M1 = DEC64BE(block + 8);
-    M2 = DEC64BE(block + 16);
-    M3 = DEC64BE(block + 24);
-    M4 = DEC64BE(block + 32);
-    M5 = DEC64BE(block + 40);
-    M6 = DEC64BE(block + 48);
-    M7 = DEC64BE(block + 56);
-    M8 = DEC64BE(block + 64);
-    M9 = DEC64BE(block + 72);
+    M0 = DEC64LE(block + 0);
+    M1 = DEC64LE(block + 8);
+    M2 = DEC64LE(block + 16);
+    M3 = DEC64LE(block + 24);
+    M4 = DEC64LE(block + 32);
+    M5 = DEC64LE(block + 40);
+    M6 = DEC64LE(block + 48);
+    M7 = DEC64LE(block + 56);
+    M8 = DEC64LE(block + 64);
+    M9 = DEC64LE(block + 72);
     ((uint*)&M9)[1] = SWAP4(gid);
 
     sph_u64 h0 = SPH_C64(0x4903ADFF749C51CE);
@@ -669,7 +669,7 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("luffa_80 output: ");
+        printf("skein_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -1883,7 +1883,7 @@ __kernel void search4(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// skein
+// skein - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search5(__global hash_t* hashes)
 {
@@ -1894,30 +1894,30 @@ __kernel void search5(__global hash_t* hashes)
     sph_u64 m0, m1, m2, m3, m4, m5, m6, m7;
     sph_u64 bcount = 0;
 
-    m0 = SWAP8(hash->h8[0]);
-    m1 = SWAP8(hash->h8[1]);
-    m2 = SWAP8(hash->h8[2]);
-    m3 = SWAP8(hash->h8[3]);
-    m4 = SWAP8(hash->h8[4]);
-    m5 = SWAP8(hash->h8[5]);
-    m6 = SWAP8(hash->h8[6]);
-    m7 = SWAP8(hash->h8[7]);
+    m0 = hash->h8[0];
+    m1 = hash->h8[1];
+    m2 = hash->h8[2];
+    m3 = hash->h8[3];
+    m4 = hash->h8[4];
+    m5 = hash->h8[5];
+    m6 = hash->h8[6];
+    m7 = hash->h8[7];
     UBI_BIG(480, 64);
     bcount = 0;
     m0 = m1 = m2 = m3 = m4 = m5 = m6 = m7 = 0;
     UBI_BIG(510, 8);
-    hash->h8[0] = SWAP8(h0);
-    hash->h8[1] = SWAP8(h1);
-    hash->h8[2] = SWAP8(h2);
-    hash->h8[3] = SWAP8(h3);
-    hash->h8[4] = SWAP8(h4);
-    hash->h8[5] = SWAP8(h5);
-    hash->h8[6] = SWAP8(h6);
-    hash->h8[7] = SWAP8(h7);
+    hash->h8[0] = h0;
+    hash->h8[1] = h1;
+    hash->h8[2] = h2;
+    hash->h8[3] = h3;
+    hash->h8[4] = h4;
+    hash->h8[5] = h5;
+    hash->h8[6] = h6;
+    hash->h8[7] = h7;
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("skein output: ");
+        printf("skein output: \n");
         printhash(*hash);
     }
     #endif
