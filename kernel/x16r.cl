@@ -1087,7 +1087,7 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// echo_80
+// echo_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1096,7 +1096,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -1121,7 +1121,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     Vb00 = Vb10 = Vb20 = Vb30 = Vb40 = Vb50 = Vb60 = Vb70 = 512UL;
     Vb01 = Vb11 = Vb21 = Vb31 = Vb41 = Vb51 = Vb61 = Vb71 = 0;
 
-    sph_u32 K0 = 512;
+    sph_u32 K0 = 640;
     sph_u32 K1 = 0;
     sph_u32 K2 = 0;
     sph_u32 K3 = 0;
@@ -1142,19 +1142,19 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     W61 = Vb61;
     W70 = Vb70;
     W71 = Vb71;
-    W80 = DEC64BE(block +   0);
-    W81 = DEC64BE(block +   8);
-    W90 = DEC64BE(block +  16);
-    W91 = DEC64BE(block +  24);
-    WA0 = DEC64BE(block +  32);
-    WA1 = DEC64BE(block +  40);
-    WB0 = DEC64BE(block +  48);
-    WB1 = DEC64BE(block +  56);
-    WC0 = DEC64BE(block +  64);
-    WC1 = DEC64BE(block +  72);
-    WC1 &= 0xFFFFFFFF00000000;
-    WC1 ^= SWAP4(gid);
-    WD0 = 0x8000000000000000;
+    W80 = DEC64LE(block +   0);
+    W81 = DEC64LE(block +   8);
+    W90 = DEC64LE(block +  16);
+    W91 = DEC64LE(block +  24);
+    WA0 = DEC64LE(block +  32);
+    WA1 = DEC64LE(block +  40);
+    WB0 = DEC64LE(block +  48);
+    WB1 = DEC64LE(block +  56);
+    WC0 = DEC64LE(block +  64);
+    WC1 = DEC64LE(block +  72);
+    // WC1 &= 0xFFFFFFFF00000000;
+    // WC1 ^= SWAP4(gid);
+    WD0 = 0x80;
     WD1 = 0;
     WE0 = 0;
     WE1 = 0x200000000000000;
@@ -1165,18 +1165,18 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
         BIG_ROUND;
     }
 
-    hash->h8[0] = (DEC64BE(block +   0)) ^ Vb00 ^ W00 ^ W80;
-    hash->h8[1] = (DEC64BE(block +   8)) ^ Vb01 ^ W01 ^ W81;
-    hash->h8[2] = (DEC64BE(block +  16)) ^ Vb10 ^ W10 ^ W90;
-    hash->h8[3] = (DEC64BE(block +  24)) ^ Vb11 ^ W11 ^ W91;
-    hash->h8[4] = (DEC64BE(block +  32)) ^ Vb20 ^ W20 ^ WA0;
-    hash->h8[5] = (DEC64BE(block +  40)) ^ Vb21 ^ W21 ^ WA1;
-    hash->h8[6] = (DEC64BE(block +  48)) ^ Vb30 ^ W30 ^ WB0;
-    hash->h8[7] = (DEC64BE(block +  56)) ^ Vb31 ^ W31 ^ WB1;
+    hash->h8[0] = (DEC64LE(block +   0)) ^ Vb00 ^ W00 ^ W80;
+    hash->h8[1] = (DEC64LE(block +   8)) ^ Vb01 ^ W01 ^ W81;
+    hash->h8[2] = (DEC64LE(block +  16)) ^ Vb10 ^ W10 ^ W90;
+    hash->h8[3] = (DEC64LE(block +  24)) ^ Vb11 ^ W11 ^ W91;
+    hash->h8[4] = (DEC64LE(block +  32)) ^ Vb20 ^ W20 ^ WA0;
+    hash->h8[5] = (DEC64LE(block +  40)) ^ Vb21 ^ W21 ^ WA1;
+    hash->h8[6] = (DEC64LE(block +  48)) ^ Vb30 ^ W30 ^ WB0;
+    hash->h8[7] = (DEC64LE(block +  56)) ^ Vb31 ^ W31 ^ WB1;
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("echo_80 output: ");
+        printf("echo_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -2279,7 +2279,7 @@ __kernel void search9(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// echo
+// echo - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchA(__global hash_t* hashes)
 {
@@ -2366,7 +2366,7 @@ __kernel void searchA(__global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("echo output: ");
+        printf("echo output: \n");
         printhash(*hashp);
     }
     #endif
