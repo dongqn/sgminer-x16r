@@ -298,7 +298,7 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// groestl_80
+// groestl_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -307,7 +307,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -315,25 +315,23 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     sph_u64 H[16];
     for (unsigned int u = 0; u < 15; u ++)
         H[u] = 0;
-    #if USE_LE
-        H[15] = ((sph_u64)(512 & 0xFF) << 56) | ((sph_u64)(512 & 0xFF00) << 40);
-    #else
-        H[15] = (sph_u64)512;
-    #endif
+    H[15] = ((sph_u64)(512 & 0xFF) << 56) | ((sph_u64)(512 & 0xFF00) << 40);
 
     sph_u64 g[16], m[16];
-    m[0] = DEC64BE(block + 0 * 8);
-    m[1] = DEC64BE(block + 1 * 8);
-    m[2] = DEC64BE(block + 2 * 8);
-    m[3] = DEC64BE(block + 3 * 8);
-    m[4] = DEC64BE(block + 4 * 8);
-    m[5] = DEC64BE(block + 5 * 8);
-    m[6] = DEC64BE(block + 6 * 8);
-    m[7] = DEC64BE(block + 7 * 8);
-    m[8] = DEC64BE(block + 8 * 8);
-    m[9] = DEC64BE(block + 9 * 8);
-    m[9] &= 0xFFFFFFFF00000000;
-    m[9] ^= SWAP4(gid);
+    m[0] = DEC64LE(block + 0 * 8);
+    m[1] = DEC64LE(block + 1 * 8);
+    m[2] = DEC64LE(block + 2 * 8);
+    m[3] = DEC64LE(block + 3 * 8);
+    m[4] = DEC64LE(block + 4 * 8);
+    m[5] = DEC64LE(block + 5 * 8);
+    m[6] = DEC64LE(block + 6 * 8);
+    m[7] = DEC64LE(block + 7 * 8);
+    m[8] = DEC64LE(block + 8 * 8);
+    m[9] = DEC64LE(block + 9 * 8);
+
+    // TODO: check this
+    m[9] &= 0x00000000FFFFFFFF;
+    m[9] ^= SWAP4(gid)<<8;
 
     for (unsigned int u = 0; u < 16; u ++)
         g[u] = m[u] ^ H[u];
@@ -343,6 +341,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     m[13] = 0; g[13] = m[13] ^ H[13];
     m[14] = 0; g[14] = m[14] ^ H[14];
     m[15] = 0x100000000000000; g[15] = m[15] ^ H[15];
+
     PERM_BIG_P(g);
     PERM_BIG_Q(m);
 
@@ -360,9 +359,9 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     for (unsigned int u = 0; u < 8; u ++)
         hash->h8[u] = H[u + 8];
 
-        #ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("groestl_80 output: ");
+        printf("groestl_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -1713,60 +1712,27 @@ __kernel void search1(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// groestl
+// groestl - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search2(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
-    __local sph_u64 T0_L[256], T1_L[256], T2_L[256], T3_L[256], T4_L[256], T5_L[256], T6_L[256], T7_L[256];
-
-    int init = get_local_id(0);
-    int step = get_local_size(0);
-
-    for (int i = init; i < 256; i += step)
-    {
-        T0_L[i] = T0[i];
-        T1_L[i] = T1[i];
-        T2_L[i] = T2[i];
-        T3_L[i] = T3[i];
-        T4_L[i] = T4[i];
-        T5_L[i] = T5[i];
-        T6_L[i] = T6[i];
-        T7_L[i] = T7[i];
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    #define T0 T0_L
-    #define T1 T1_L
-    #define T2 T2_L
-    #define T3 T3_L
-    #define T4 T4_L
-    #define T5 T5_L
-    #define T6 T6_L
-    #define T7 T7_L
-
-    // groestl
-
     sph_u64 H[16];
     for (unsigned int u = 0; u < 15; u ++)
         H[u] = 0;
-    #if USE_LE
-        H[15] = ((sph_u64)(512 & 0xFF) << 56) | ((sph_u64)(512 & 0xFF00) << 40);
-    #else
-        H[15] = (sph_u64)512;
-    #endif
+    H[15] = ((sph_u64)(512 & 0xFF) << 56) | ((sph_u64)(512 & 0xFF00) << 40);
 
     sph_u64 g[16], m[16];
-    m[0] = DEC64E(hash->h8[0]);
-    m[1] = DEC64E(hash->h8[1]);
-    m[2] = DEC64E(hash->h8[2]);
-    m[3] = DEC64E(hash->h8[3]);
-    m[4] = DEC64E(hash->h8[4]);
-    m[5] = DEC64E(hash->h8[5]);
-    m[6] = DEC64E(hash->h8[6]);
-    m[7] = DEC64E(hash->h8[7]);
+    m[0] = hash->h8[0];
+    m[1] = hash->h8[1];
+    m[2] = hash->h8[2];
+    m[3] = hash->h8[3];
+    m[4] = hash->h8[4];
+    m[5] = hash->h8[5];
+    m[6] = hash->h8[6];
+    m[7] = hash->h8[7];
     for (unsigned int u = 0; u < 16; u ++)
         g[u] = m[u] ^ H[u];
     m[8] = 0x80; g[8] = m[8] ^ H[8];
@@ -1788,11 +1754,11 @@ __kernel void search2(__global hash_t* hashes)
     for (unsigned int u = 0; u < 16; u ++)
         H[u] ^= xH[u];
     for (unsigned int u = 0; u < 8; u ++)
-        hash->h8[u] = DEC64E(H[u + 8]);
+        hash->h8[u] = H[u + 8];
 
-        #ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("groestl output: ");
+        printf("groestl output: \n");
         printhash(*hash);
     }
     #endif
