@@ -148,7 +148,7 @@ void printblock(__global unsigned char* block, size_t len) {
 
 // 80-byte hash functions
 
-// blake_80
+// blake_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -157,7 +157,7 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -167,12 +167,11 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
     sph_u64 H4 = SPH_C64(0x510E527FADE682D1), H5 = SPH_C64(0x9B05688C2B3E6C1F);
     sph_u64 H6 = SPH_C64(0x1F83D9ABFB41BD6B), H7 = SPH_C64(0x5BE0CD19137E2179);
     sph_u64 S0 = 0, S1 = 0, S2 = 0, S3 = 0;
-    sph_u64 T0 = SPH_C64(0xFFFFFFFFFFFFFC00) + (80 << 3), T1 = 0xFFFFFFFFFFFFFFFF;;
+    sph_u64 T0 = SPH_C64(0xFFFFFFFFFFFFFC00) + (80 << 3), T1 = 0xFFFFFFFFFFFFFFFF;
 
     if ((T0 = SPH_T64(T0 + 1024)) < 1024)
-    {
         T1 = SPH_T64(T1 + 1);
-    }
+
     sph_u64 M0, M1, M2, M3, M4, M5, M6, M7;
     sph_u64 M8, M9, MA, MB, MC, MD, ME, MF;
     sph_u64 V0, V1, V2, V3, V4, V5, V6, V7;
@@ -198,18 +197,18 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
 
     COMPRESS64;
 
-    hash->h8[0] = H0;
-    hash->h8[1] = H1;
-    hash->h8[2] = H2;
-    hash->h8[3] = H3;
-    hash->h8[4] = H4;
-    hash->h8[5] = H5;
-    hash->h8[6] = H6;
-    hash->h8[7] = H7;
+    hash->h8[0] = SWAP8(H0);
+    hash->h8[1] = SWAP8(H1);
+    hash->h8[2] = SWAP8(H2);
+    hash->h8[3] = SWAP8(H3);
+    hash->h8[4] = SWAP8(H4);
+    hash->h8[5] = SWAP8(H5);
+    hash->h8[6] = SWAP8(H6);
+    hash->h8[7] = SWAP8(H7);
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("blake_80 output: ");
+        printf("blake_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -1584,7 +1583,7 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 
 // 64-byte hash functions
 
-// blake
+// blake - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search0(__global hash_t* hashes)
 {
@@ -1596,7 +1595,7 @@ __kernel void search0(__global hash_t* hashes)
     sph_u64 H4 = SPH_C64(0x510E527FADE682D1), H5 = SPH_C64(0x9B05688C2B3E6C1F);
     sph_u64 H6 = SPH_C64(0x1F83D9ABFB41BD6B), H7 = SPH_C64(0x5BE0CD19137E2179);
     sph_u64 S0 = 0, S1 = 0, S2 = 0, S3 = 0;
-    sph_u64 T0 = SPH_C64(0xFFFFFFFFFFFFFC00) + (64 << 3), T1 = 0xFFFFFFFFFFFFFFFF;;
+    sph_u64 T0 = SPH_C64(0xFFFFFFFFFFFFFC00) + (64 << 3), T1 = 0xFFFFFFFFFFFFFFFF;
 
     if ((T0 = SPH_T64(T0 + 1024)) < 1024)
     {
@@ -1606,14 +1605,14 @@ __kernel void search0(__global hash_t* hashes)
     sph_u64 M8, M9, MA, MB, MC, MD, ME, MF;
     sph_u64 V0, V1, V2, V3, V4, V5, V6, V7;
     sph_u64 V8, V9, VA, VB, VC, VD, VE, VF;
-    M0 = hash->h8[0];
-    M1 = hash->h8[1];
-    M2 = hash->h8[2];
-    M3 = hash->h8[3];
-    M4 = hash->h8[4];
-    M5 = hash->h8[5];
-    M6 = hash->h8[6];
-    M7 = hash->h8[7];
+    M0 = SWAP8(hash->h8[0]);
+    M1 = SWAP8(hash->h8[1]);
+    M2 = SWAP8(hash->h8[2]);
+    M3 = SWAP8(hash->h8[3]);
+    M4 = SWAP8(hash->h8[4]);
+    M5 = SWAP8(hash->h8[5]);
+    M6 = SWAP8(hash->h8[6]);
+    M7 = SWAP8(hash->h8[7]);
     M8 = 0x8000000000000000;
     M9 = 0;
     MA = 0;
@@ -1625,18 +1624,18 @@ __kernel void search0(__global hash_t* hashes)
 
     COMPRESS64;
 
-    hash->h8[0] = H0;
-    hash->h8[1] = H1;
-    hash->h8[2] = H2;
-    hash->h8[3] = H3;
-    hash->h8[4] = H4;
-    hash->h8[5] = H5;
-    hash->h8[6] = H6;
-    hash->h8[7] = H7;
+    hash->h8[0] = SWAP8(H0);
+    hash->h8[1] = SWAP8(H1);
+    hash->h8[2] = SWAP8(H2);
+    hash->h8[3] = SWAP8(H3);
+    hash->h8[4] = SWAP8(H4);
+    hash->h8[5] = SWAP8(H5);
+    hash->h8[6] = SWAP8(H6);
+    hash->h8[7] = SWAP8(H7);
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("blake output: ");
+        printf("blake output: \n");
         printhash(*hash);
     }
     #endif
