@@ -1349,7 +1349,7 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// shabal_80
+// shabal_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1359,7 +1359,7 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -1383,22 +1383,22 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     sph_u32 M0, M1, M2, M3, M4, M5, M6, M7, M8, M9, MA, MB, MC, MD, ME, MF;
     sph_u32 Wlow = 1, Whigh = 0;
 
-    M0 = DEC32BE(block +   0);
-    M1 = DEC32BE(block +   4);
-    M2 = DEC32BE(block +   8);
-    M3 = DEC32BE(block +  12);
-    M4 = DEC32BE(block +  16);
-    M5 = DEC32BE(block +  20);
-    M6 = DEC32BE(block +  24);
-    M7 = DEC32BE(block +  28);
-    M8 = DEC32BE(block +  32);
-    M9 = DEC32BE(block +  36);
-    MA = DEC32BE(block +  40);
-    MB = DEC32BE(block +  44);
-    MC = DEC32BE(block +  48);
-    MD = DEC32BE(block +  52);
-    ME = DEC32BE(block +  56);
-    MF = DEC32BE(block +  60);
+    M0 = DEC32LE(block +   0);
+    M1 = DEC32LE(block +   4);
+    M2 = DEC32LE(block +   8);
+    M3 = DEC32LE(block +  12);
+    M4 = DEC32LE(block +  16);
+    M5 = DEC32LE(block +  20);
+    M6 = DEC32LE(block +  24);
+    M7 = DEC32LE(block +  28);
+    M8 = DEC32LE(block +  32);
+    M9 = DEC32LE(block +  36);
+    MA = DEC32LE(block +  40);
+    MB = DEC32LE(block +  44);
+    MC = DEC32LE(block +  48);
+    MD = DEC32LE(block +  52);
+    ME = DEC32LE(block +  56);
+    MF = DEC32LE(block +  60);
 
     INPUT_BLOCK_ADD;
     XOR_W;
@@ -1407,11 +1407,12 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     SWAP_BC;
     INCR_W;
 
-    M0 = DEC32BE(block +  64);
-    M1 = DEC32BE(block +  68);
-    M2 = DEC32BE(block +  72);
-    M3 = SWAP4(gid);
-    M4 = 0x80000000;
+    M0 = DEC32LE(block +  64);
+    M1 = DEC32LE(block +  68);
+    M3 = DEC32LE(block +  76);
+    M2 = 0;
+    // M2 = SWAP4(gid);
+    M4 = 0x80;
     M5 = M6 = M7 = M8 = M9 = MA = MB = MC = MD = ME = MF = 0;
 
     INPUT_BLOCK_ADD;
@@ -1444,7 +1445,7 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("shabal_80 output: ");
+        printf("shabal_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -2551,8 +2552,8 @@ __kernel void searchC(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// shabal
-__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+// shabal - WORKS
+// __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchD(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
@@ -2625,13 +2626,12 @@ __kernel void searchD(__global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("shabal output: ");
+        printf("shabal output: \n");
         printhash(*hash);
     }
     #endif
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
-
 
 // whirlpool - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
