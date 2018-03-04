@@ -844,7 +844,7 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// shavite_80
+// shavite_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -853,7 +853,7 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -887,26 +887,27 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
 
     sph_u32 sc_count0 = 0x280, sc_count1 = 0, sc_count2 = 0, sc_count3 = 0;
 
-    rk00 = DEC32BE(block + 0);
-    rk01 = DEC32BE(block + 4);
-    rk02 = DEC32BE(block + 8);
-    rk03 = DEC32BE(block + 12);
-    rk04 = DEC32BE(block + 16);
-    rk05 = DEC32BE(block + 20);
-    rk06 = DEC32BE(block + 24);
-    rk07 = DEC32BE(block + 28);
-    rk08 = DEC32BE(block + 32);
-    rk09 = DEC32BE(block + 36);
-    rk0A = DEC32BE(block + 40);
-    rk0B = DEC32BE(block + 44);
-    rk0C = DEC32BE(block + 48);
-    rk0D = DEC32BE(block + 52);
-    rk0E = DEC32BE(block + 56);
-    rk0F = DEC32BE(block + 60);
-    rk10 = DEC32BE(block + 64);
-    rk11 = DEC32BE(block + 68);
-    rk12 = DEC32BE(block + 72);
-    rk13 = gid;
+    rk00 = DEC32LE(block + 0);
+    rk01 = DEC32LE(block + 4);
+    rk02 = DEC32LE(block + 8);
+    rk03 = DEC32LE(block + 12);
+    rk04 = DEC32LE(block + 16);
+    rk05 = DEC32LE(block + 20);
+    rk06 = DEC32LE(block + 24);
+    rk07 = DEC32LE(block + 28);
+    rk08 = DEC32LE(block + 32);
+    rk09 = DEC32LE(block + 36);
+    rk0A = DEC32LE(block + 40);
+    rk0B = DEC32LE(block + 44);
+    rk0C = DEC32LE(block + 48);
+    rk0D = DEC32LE(block + 52);
+    rk0E = DEC32LE(block + 56);
+    rk0F = DEC32LE(block + 60);
+    rk10 = DEC32LE(block + 64);
+    rk11 = DEC32LE(block + 68);
+    rk12 = DEC32LE(block + 72);
+    // rk13 = DEC32LE(block + 76);
+    rk13 = SWAP4(gid);
     rk14 = 0x80;
     rk15 = rk16 = rk17 = rk18 = rk19 = rk1A = 0;
     rk1B = 0x2800000;
@@ -934,7 +935,7 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("shavite_80 output: ");
+        printf("shavite_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -2082,7 +2083,7 @@ __kernel void search7(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// shavite
+// shavite - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search8(__global hash_t* hashes)
 {
@@ -2161,7 +2162,7 @@ __kernel void search8(__global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("shavite output: ");
+        printf("shavite output: \n");
         printhash(*hash);
     }
     #endif
