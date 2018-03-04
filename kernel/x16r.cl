@@ -1451,7 +1451,7 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// whirlpool_80
+// whirlpool_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1460,55 +1460,70 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
 
     __local sph_u64 LT0[256], LT1[256], LT2[256], LT3[256], LT4[256], LT5[256], LT6[256], LT7[256];
+
+    int init = get_local_id(0);
+    int step = get_local_size(0);
+
+    for (int i = init; i < 256; i += step) {
+      LT0[i] = plain_T0[i];
+      LT1[i] = plain_T1[i];
+      LT2[i] = plain_T2[i];
+      LT3[i] = plain_T3[i];
+      LT4[i] = plain_T4[i];
+      LT5[i] = plain_T5[i];
+      LT6[i] = plain_T6[i];
+      LT7[i] = plain_T7[i];
+    }
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
     sph_u64 n0, n1, n2, n3, n4, n5, n6, n7;
     sph_u64 h0, h1, h2, h3, h4, h5, h6, h7;
+    sph_u64 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
     sph_u64 state[8];
 
     h0 = h1 = h2 = h3 = h4 = h5 = h6 = h7 = 0;
 
-    n0 = DEC64BE(block +    0);
-    n1 = DEC64BE(block +    8);
-    n2 = DEC64BE(block +   16);
-    n3 = DEC64BE(block +   24);
-    n4 = DEC64BE(block +   32);
-    n5 = DEC64BE(block +   40);
-    n6 = DEC64BE(block +   48);
-    n7 = DEC64BE(block +   56);
+    n0 = DEC64LE(block +    0);
+    n1 = DEC64LE(block +    8);
+    n2 = DEC64LE(block +   16);
+    n3 = DEC64LE(block +   24);
+    n4 = DEC64LE(block +   32);
+    n5 = DEC64LE(block +   40);
+    n6 = DEC64LE(block +   48);
+    n7 = DEC64LE(block +   56);
 
     #pragma unroll 10
-    for (unsigned r = 0; r < 10; r ++)
-    {
-        sph_u64 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
-
+    for (unsigned r = 0; r < 10; r ++) {
         ROUND_KSCHED(plain_T, h, tmp, plain_RC[r]);
         TRANSFER(h, tmp);
         ROUND_WENC(plain_T, n, h, tmp);
         TRANSFER(n, tmp);
     }
 
-    h0 = state[0] = n0 ^ DEC64BE(block +   0);
-    h1 = state[1] = n1 ^ DEC64BE(block +   8);
-    h2 = state[2] = n2 ^ DEC64BE(block +   16);
-    h3 = state[3] = n3 ^ DEC64BE(block +   24);
-    h4 = state[4] = n4 ^ DEC64BE(block +   32);
-    h5 = state[5] = n5 ^ DEC64BE(block +   40);
-    h6 = state[6] = n6 ^ DEC64BE(block +   48);
-    h7 = state[7] = n7 ^ DEC64BE(block +   56);
+    h0 = state[0] = n0 ^ DEC64LE(block +   0);
+    h1 = state[1] = n1 ^ DEC64LE(block +   8);
+    h2 = state[2] = n2 ^ DEC64LE(block +   16);
+    h3 = state[3] = n3 ^ DEC64LE(block +   24);
+    h4 = state[4] = n4 ^ DEC64LE(block +   32);
+    h5 = state[5] = n5 ^ DEC64LE(block +   40);
+    h6 = state[6] = n6 ^ DEC64LE(block +   48);
+    h7 = state[7] = n7 ^ DEC64LE(block +   56);
 
 
-    n0 = DEC64BE(block +  64);
-    n1 = DEC64BE(block +  72);
-    n1 &= 0xFFFFFFFF00000000;
-    n1 ^= SWAP4(gid);
+    n0 = DEC64LE(block +  64);
+    n1 = DEC64LE(block +  72);
+    n1 &= 0x00000000FFFFFFFF;
+    n1 ^= ((sph_u64) gid) << 32;
     n3 = n4 = n5 = n6 = 0;
-    n2 = 0x8000000000000000;
-    n7 = 0x280;
+    n2 = 0x0000000000000080;
+    n7 = 0x8002000000000000;
     sph_u64 temp0,temp1,temp2,temp7;
     temp0 = n0;
     temp1 = n1;
@@ -1525,10 +1540,7 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
     n7 ^= h7;
 
     #pragma unroll 10
-    for (unsigned r = 0; r < 10; r ++)
-    {
-        sph_u64 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
-
+    for (unsigned r = 0; r < 10; r ++) {
         ROUND_KSCHED(LT, h, tmp, plain_RC[r]);
         TRANSFER(h, tmp);
         ROUND_WENC(plain_T, n, h, tmp);
@@ -1546,7 +1558,7 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("whirlpool_80 output: ");
+        printf("whirlpool_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -2621,7 +2633,7 @@ __kernel void searchD(__global hash_t* hashes)
 }
 
 
-// whirlpool
+// whirlpool - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchE(__global hash_t* hashes)
 {
@@ -2630,62 +2642,59 @@ __kernel void searchE(__global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-offset]);
 
     __local sph_u64 LT0[256], LT1[256], LT2[256], LT3[256], LT4[256], LT5[256], LT6[256], LT7[256];
+
+    int init = get_local_id(0);
+    int step = get_local_size(0);
+
+    for (int i = init; i < 256; i += step)
+    {
+      LT0[i] = plain_T0[i];
+      LT1[i] = plain_T1[i];
+      LT2[i] = plain_T2[i];
+      LT3[i] = plain_T3[i];
+      LT4[i] = plain_T4[i];
+      LT5[i] = plain_T5[i];
+      LT6[i] = plain_T6[i];
+      LT7[i] = plain_T7[i];
+    }
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
     sph_u64 n0, n1, n2, n3, n4, n5, n6, n7;
     sph_u64 h0, h1, h2, h3, h4, h5, h6, h7;
     sph_u64 state[8];
+    sph_u64 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
 
-    n0 = (hash->h8[0]);
-    n1 = (hash->h8[1]);
-    n2 = (hash->h8[2]);
-    n3 = (hash->h8[3]);
-    n4 = (hash->h8[4]);
-    n5 = (hash->h8[5]);
-    n6 = (hash->h8[6]);
-    n7 = (hash->h8[7]);
-
-    h0 = h1 = h2 = h3 = h4 = h5 = h6 = h7 = 0;
-
-    n0 ^= h0;
-    n1 ^= h1;
-    n2 ^= h2;
-    n3 ^= h3;
-    n4 ^= h4;
-    n5 ^= h5;
-    n6 ^= h6;
-    n7 ^= h7;
+    n0 = hash->h8[0];
+    n1 = hash->h8[1];
+    n2 = hash->h8[2];
+    n3 = hash->h8[3];
+    n4 = hash->h8[4];
+    n5 = hash->h8[5];
+    n6 = hash->h8[6];
+    n7 = hash->h8[7];
 
     #pragma unroll 10
     for (unsigned r = 0; r < 10; r ++)
     {
-        sph_u64 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
-
         ROUND_KSCHED(plain_T, h, tmp, plain_RC[r]);
         TRANSFER(h, tmp);
         ROUND_WENC(plain_T, n, h, tmp);
         TRANSFER(n, tmp);
     }
 
-    state[0] = n0 ^ (hash->h8[0]);
-    state[1] = n1 ^ (hash->h8[1]);
-    state[2] = n2 ^ (hash->h8[2]);
-    state[3] = n3 ^ (hash->h8[3]);
-    state[4] = n4 ^ (hash->h8[4]);
-    state[5] = n5 ^ (hash->h8[5]);
-    state[6] = n6 ^ (hash->h8[6]);
-    state[7] = n7 ^ (hash->h8[7]);
+    h0 = state[0] = n0 ^ hash->h8[0];
+    h1 = state[1] = n1 ^ hash->h8[1];
+    h2 = state[2] = n2 ^ hash->h8[2];
+    h3 = state[3] = n3 ^ hash->h8[3];
+    h4 = state[4] = n4 ^ hash->h8[4];
+    h5 = state[5] = n5 ^ hash->h8[5];
+    h6 = state[6] = n6 ^ hash->h8[6];
+    h7 = state[7] = n7 ^ hash->h8[7];
 
     n0 = 0x80;
     n1 = n2 = n3 = n4 = n5 = n6 = 0;
     n7 = 0x2000000000000;
-
-    h0 = state[0];
-    h1 = state[1];
-    h2 = state[2];
-    h3 = state[3];
-    h4 = state[4];
-    h5 = state[5];
-    h6 = state[6];
-    h7 = state[7];
 
     n0 ^= h0;
     n1 ^= h1;
@@ -2699,8 +2708,6 @@ __kernel void searchE(__global hash_t* hashes)
     #pragma unroll 10
     for (unsigned r = 0; r < 10; r ++)
     {
-        sph_u64 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
-
         ROUND_KSCHED(LT, h, tmp, plain_RC[r]);
         TRANSFER(h, tmp);
         ROUND_WENC(plain_T, n, h, tmp);
@@ -2719,9 +2726,9 @@ __kernel void searchE(__global hash_t* hashes)
     for (unsigned i = 0; i < 8; i ++)
         hash->h8[i] = state[i];
 
-        #ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("whirlpool output: ");
+        printf("whirlpool output: \n");
         printhash(*hash);
     }
     #endif
