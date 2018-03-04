@@ -1183,8 +1183,8 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// hamsi_80
-__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+// hamsi_80 - WORKS
+// __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
@@ -1192,7 +1192,7 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -1217,18 +1217,18 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
     P_BIG;
     T_BIG;
     #undef buf
-    #define buf(u) (u == 6 ? 2 : 0)
+    #define buf(u) (u == 6 ? 2 : (u == 7 ? 0x80 : 0))
     INPUT_BIG;
     PF_BIG;
     T_BIG;
     #undef buf
 
     for (unsigned u = 0; u < 16; u ++)
-        hash->h4[u] = h[u];
+        hash->h4[u] = SWAP4(h[u]);
 
-        #ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("hamsi_80 output: ");
+        printf("hamsi_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -2373,8 +2373,8 @@ __kernel void searchA(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// hamsi
-__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+// hamsi - WORKS
+// __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchB(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
@@ -2413,11 +2413,11 @@ __kernel void searchB(__global hash_t* hashes)
     T_BIG;
 
     for (unsigned u = 0; u < 16; u ++)
-        hashp->h4[u] = h[u];
+        hashp->h4[u] = SWAP4(h[u]);
 
-        #ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("hamsi output: ");
+        printf("hamsi output: \n");
         printhash(*hashp);
     }
     #endif
