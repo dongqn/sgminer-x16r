@@ -34,9 +34,11 @@
 #ifndef X16R_CL
 #define X16R_CL
 
-#pragma OPENCL EXTENSION cl_ amd_ printf : enable
+// #define DEBUG_PRINT
 
-#define DEBUG_PRINT
+#ifdef DEBUG_PRINT
+#pragma OPENCL EXTENSION cl_amd_printf : enable
+#endif
 
 #if __ENDIAN_LITTLE__
 #define SPH_LITTLE_ENDIAN 1
@@ -407,7 +409,7 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
             h7l ^= DEC64LE(block + 56);
 
             h0h ^= DEC64LE(block + 64);
-            h4l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF
+            h4l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF;
             h4l ^= ((sph_u64) gid) << 32;
             h1h ^= 0x80;
         }
@@ -535,7 +537,9 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
     M7 = DEC64LE(block + 56);
     M8 = DEC64LE(block + 64);
     M9 = DEC64LE(block + 72);
-    ((uint*)&M9)[1] = gid;
+    M9 &= 0x00000000FFFFFFFF;
+    M9 ^= ((sph_u64) gid) << 32;
+    // ((uint*)&M9)[1] = gid;
 
     sph_u64 h0 = SPH_C64(0x4903ADFF749C51CE);
     sph_u64 h1 = SPH_C64(0x0D95DE399746DF03);
@@ -2765,16 +2769,16 @@ __kernel void output(__global hash_t* hashes,
 {
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
-    __global hash_t *hashp = &(hashes[gid-offset]);
+    __global hash_t *hash = &(hashes[gid-offset]);
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("output: ");
-        printhash(*hashp);
+        printf("output: \n");
+        printhash(*hash);
     }
     #endif
 
-    bool result = (hashp->h8[3] <= target);
+    bool result = (hash->h8[3] <= target);
     if (result)
         output[output[0xFF]++] = SWAP4(gid);
 
