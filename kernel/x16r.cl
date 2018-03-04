@@ -446,7 +446,7 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// keccak_80
+// keccak_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -455,7 +455,7 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -473,19 +473,23 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
     a23 = SPH_C64(0xFFFFFFFFFFFFFFFF);
     a04 = SPH_C64(0xFFFFFFFFFFFFFFFF);
 
-
-    a00 = DEC64BE(block + 0);
-    a10 = DEC64BE(block + 8);
-    a20 = DEC64BE(block + 16);
-    a30 = DEC64BE(block + 24);
-    a40 = DEC64BE(block + 32);
-    a11 = DEC64BE(block + 40);
-    a21 = DEC64BE(block + 48);
-    a31 = DEC64BE(block + 56);
-    a41 = DEC64BE(block + 64);
-    a02 = DEC64BE(block + 72);
-    a12 ^= 0x8000000000000001;
+    a00 ^= DEC64LE(block + 0);
+    a10 ^= DEC64LE(block + 8);
+    a20 ^= DEC64LE(block + 16);
+    a30 ^= DEC64LE(block + 24);
+    a40 ^= DEC64LE(block + 32);
+    a01 ^= DEC64LE(block + 40);
+    a11 ^= DEC64LE(block + 48);
+    a21 ^= DEC64LE(block + 56);
+    a31 ^= DEC64LE(block + 64);
     KECCAK_F_1600;
+
+    // TODO: check this works
+    a00 ^= (DEC64LE(block + 72) & 0x00000000FFFFFFFF)^(SWAP4(gid)<<8);
+    a10 ^= 1;
+    a31 ^= 0x8000000000000000;
+    KECCAK_F_1600;
+
     // Finalize the "lane complement"
     a10 = ~a10;
     a20 = ~a20;
@@ -501,7 +505,7 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("keccak_80 output: ");
+        printf("keccak_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -1827,7 +1831,7 @@ __kernel void search3(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// keccak
+// keccak - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search4(__global hash_t* hashes)
 {
@@ -1847,32 +1851,32 @@ __kernel void search4(__global hash_t* hashes)
     a23 = SPH_C64(0xFFFFFFFFFFFFFFFF);
     a04 = SPH_C64(0xFFFFFFFFFFFFFFFF);
 
-    a00 ^= SWAP8(hash->h8[0]);
-    a10 ^= SWAP8(hash->h8[1]);
-    a20 ^= SWAP8(hash->h8[2]);
-    a30 ^= SWAP8(hash->h8[3]);
-    a40 ^= SWAP8(hash->h8[4]);
-    a01 ^= SWAP8(hash->h8[5]);
-    a11 ^= SWAP8(hash->h8[6]);
-    a21 ^= SWAP8(hash->h8[7]);
+    a00 ^= hash->h8[0];
+    a10 ^= hash->h8[1];
+    a20 ^= hash->h8[2];
+    a30 ^= hash->h8[3];
+    a40 ^= hash->h8[4];
+    a01 ^= hash->h8[5];
+    a11 ^= hash->h8[6];
+    a21 ^= hash->h8[7];
     a31 ^= 0x8000000000000001;
     KECCAK_F_1600;
     // Finalize the "lane complement"
     a10 = ~a10;
     a20 = ~a20;
 
-    hash->h8[0] = SWAP8(a00);
-    hash->h8[1] = SWAP8(a10);
-    hash->h8[2] = SWAP8(a20);
-    hash->h8[3] = SWAP8(a30);
-    hash->h8[4] = SWAP8(a40);
-    hash->h8[5] = SWAP8(a01);
-    hash->h8[6] = SWAP8(a11);
-    hash->h8[7] = SWAP8(a21);
+    hash->h8[0] = a00;
+    hash->h8[1] = a10;
+    hash->h8[2] = a20;
+    hash->h8[3] = a30;
+    hash->h8[4] = a40;
+    hash->h8[5] = a01;
+    hash->h8[6] = a11;
+    hash->h8[7] = a21;
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("keccak output: ");
+        printf("keccak output: \n");
         printhash(*hash);
     }
     #endif
