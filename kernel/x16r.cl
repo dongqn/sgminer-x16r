@@ -368,7 +368,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// jh_80
+// jh_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -377,7 +377,7 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("input: ");
+        printf("input: \n");
         printblock(block, 80);
     }
     #endif
@@ -386,43 +386,46 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
     sph_u64 h4h = C64e(0x0169e60541e34a69), h4l = C64e(0x46b58a8e2e6fe65a), h5h = C64e(0x1047a7d0c1843c24), h5l = C64e(0x3b6e71b12d5ac199), h6h = C64e(0xcf57f6ec9db1f856), h6l = C64e(0xa706887c5716b156), h7h = C64e(0xe3c2fcdfe68517fb), h7l = C64e(0x545a4678cc8cdd4b);
     sph_u64 tmp;
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
         if (i == 0) {
-            h0h ^= DEC64BE(block +  0);
-            h0l ^= DEC64BE(block +  8);
-            h1h ^= DEC64BE(block + 16);
-            h1l ^= DEC64BE(block + 24);
-            h2h ^= DEC64BE(block + 32);
-            h2l ^= DEC64BE(block + 40);
-            h3h ^= DEC64BE(block + 48);
-            h3l ^= DEC64BE(block + 56);
+            h0h ^= DEC64LE(block +  0);
+            h0l ^= DEC64LE(block +  8);
+            h1h ^= DEC64LE(block + 16);
+            h1l ^= DEC64LE(block + 24);
+            h2h ^= DEC64LE(block + 32);
+            h2l ^= DEC64LE(block + 40);
+            h3h ^= DEC64LE(block + 48);
+            h3l ^= DEC64LE(block + 56);
         }
         else if (i == 1) {
-            h4h ^= DEC64BE(block +  0);
-            h4l ^= DEC64BE(block +  8);
-            h5h ^= DEC64BE(block + 16);
-            h5l ^= DEC64BE(block + 24);
-            h6h ^= DEC64BE(block + 32);
-            h6l ^= DEC64BE(block + 40);
-            h7h ^= DEC64BE(block + 48);
-            h7l ^= DEC64BE(block + 56);
-        }
-        else if (i == 3) {
-            h0h ^= DEC64BE(block + 64);
-            h0l ^= (DEC64BE(block + 72) & 0xFFFFFFFF00000000) ^ SWAP4(gid);
+            h4h ^= DEC64LE(block +  0);
+            h4l ^= DEC64LE(block +  8);
+            h5h ^= DEC64LE(block + 16);
+            h5l ^= DEC64LE(block + 24);
+            h6h ^= DEC64LE(block + 32);
+            h6l ^= DEC64LE(block + 40);
+            h7h ^= DEC64LE(block + 48);
+            h7l ^= DEC64LE(block + 56);
+
+            h0h ^= DEC64LE(block + 64);
+            // h0l ^= DEC64LE(block + 72);
+            // TODO: Check this works
+            h4l ^= (DEC64LE(block + 72) & 0x00000000FFFFFFFF)^(SWAP4(gid)<<8);
             h1h ^= 0x80;
         }
-        else if (i == 4) {
-            h4h ^= DEC64BE(block + 64);
-            h4l ^= (DEC64BE(block + 72) & 0xFFFFFFFF00000000) ^ SWAP4(gid);
+        else if (i == 2) {
+            h4h ^= DEC64LE(block + 64);
+            // h4l ^= DEC64LE(block + 72);
+            // TODO: Check this works
+            h4l ^= (DEC64LE(block + 72) & 0x00000000FFFFFFFF)^(SWAP4(gid)<<8);
             h5h ^= 0x80;
-            h3l ^= 0x8002000000000000U;
+            h3l ^= 0x8002000000000000;
         }
         E8;
     }
 
-    h7l ^= 0x8002000000000000U;
+    h7l ^= 0x8002000000000000;
 
     hash->h8[0] = h4h;
     hash->h8[1] = h4l;
@@ -433,9 +436,10 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[6] = h7h;
     hash->h8[7] = h7l;
 
+
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("jh_80 output: ");
+        printf("jh_80 output: \n");
         printhash(*hash);
     }
     #endif
@@ -1765,7 +1769,7 @@ __kernel void search2(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// jh
+// jh - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search3(__global hash_t* hashes)
 {
@@ -1779,23 +1783,23 @@ __kernel void search3(__global hash_t* hashes)
     for(int i = 0; i < 2; i++)
     {
         if (i == 0) {
-            h0h ^= DEC64E(hash->h8[0]);
-            h0l ^= DEC64E(hash->h8[1]);
-            h1h ^= DEC64E(hash->h8[2]);
-            h1l ^= DEC64E(hash->h8[3]);
-            h2h ^= DEC64E(hash->h8[4]);
-            h2l ^= DEC64E(hash->h8[5]);
-            h3h ^= DEC64E(hash->h8[6]);
-            h3l ^= DEC64E(hash->h8[7]);
+            h0h ^= hash->h8[0];
+            h0l ^= hash->h8[1];
+            h1h ^= hash->h8[2];
+            h1l ^= hash->h8[3];
+            h2h ^= hash->h8[4];
+            h2l ^= hash->h8[5];
+            h3h ^= hash->h8[6];
+            h3l ^= hash->h8[7];
         } else if(i == 1) {
-            h4h ^= DEC64E(hash->h8[0]);
-            h4l ^= DEC64E(hash->h8[1]);
-            h5h ^= DEC64E(hash->h8[2]);
-            h5l ^= DEC64E(hash->h8[3]);
-            h6h ^= DEC64E(hash->h8[4]);
-            h6l ^= DEC64E(hash->h8[5]);
-            h7h ^= DEC64E(hash->h8[6]);
-            h7l ^= DEC64E(hash->h8[7]);
+            h4h ^= hash->h8[0];
+            h4l ^= hash->h8[1];
+            h5h ^= hash->h8[2];
+            h5l ^= hash->h8[3];
+            h6h ^= hash->h8[4];
+            h6l ^= hash->h8[5];
+            h7h ^= hash->h8[6];
+            h7l ^= hash->h8[7];
 
             h0h ^= 0x80;
             h3l ^= 0x2000000000000;
@@ -1805,18 +1809,18 @@ __kernel void search3(__global hash_t* hashes)
     h4h ^= 0x80;
     h7l ^= 0x2000000000000;
 
-    hash->h8[0] = DEC64E(h4h);
-    hash->h8[1] = DEC64E(h4l);
-    hash->h8[2] = DEC64E(h5h);
-    hash->h8[3] = DEC64E(h5l);
-    hash->h8[4] = DEC64E(h6h);
-    hash->h8[5] = DEC64E(h6l);
-    hash->h8[6] = DEC64E(h7h);
-    hash->h8[7] = DEC64E(h7l);
+    hash->h8[0] = h4h;
+    hash->h8[1] = h4l;
+    hash->h8[2] = h5h;
+    hash->h8[3] = h5l;
+    hash->h8[4] = h6h;
+    hash->h8[5] = h6l;
+    hash->h8[6] = h7h;
+    hash->h8[7] = h7l;
 
     #ifdef DEBUG_PRINT
     if (!gid) {
-        printf("jh output: ");
+        printf("jh output: \n");
         printhash(*hash);
     }
     #endif
