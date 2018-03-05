@@ -1185,7 +1185,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// hamsi_80 - WORKS - TODO: add nonce
+// hamsi_80 - WORKS
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1214,8 +1214,7 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
         T_BIG;
     }
     #undef buf
-    // TODO: fix
-    #define buf(u) ((u < 4)? block[72+u]:(((uchar*)&gid)[8-u]))
+    #define buf(u) ((u < 4)? block[72+u]:(((uchar*)&gid)[u-4]))
     INPUT_BIG;
     P_BIG;
     T_BIG;
