@@ -37,7 +37,7 @@
 // #define DEBUG_PRINT
 
 #ifdef DEBUG_PRINT
-#pragma OPENCL EXTENSION cl_amd_printf : enable
+// #pragma OPENCL EXTENSION cl_amd_printf : enable
 #endif
 
 #if __ENDIAN_LITTLE__
@@ -135,15 +135,15 @@ typedef union {
 } hash_t;
 
 void printhash(hash_t hash) {
-  for (uint i = 0; i < 8; i++) {
-    printf("%016X", hash.h8[i]);
+  for (uint i = 0; i < 16; i++) {
+    printf("%08X", hash.h4[i]);
   }
   printf("\n");
 }
 
 void printblock(__global unsigned char* block, size_t len) {
-  for (uint i = 0; i < len/8; i++) {
-    printf("%016X", DEC64(block + 8*i));
+  for (uint i = 0; i < len/4; i++) {
+    printf("%08X", DEC32LE(block + 4*i));
   }
   printf("\n");
 }
@@ -158,7 +158,7 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -209,7 +209,7 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[7] = SWAP8(H7);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("blake_80 output: \n");
         printhash(*hash);
     }
@@ -226,7 +226,7 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -290,7 +290,7 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[7] = BMW_h1[15];
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("bmw_80 output: \n");
         printhash(*hash);
     }
@@ -307,7 +307,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -360,7 +360,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
         hash->h8[u] = H[u + 8];
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("groestl_80 output: \n");
         printhash(*hash);
     }
@@ -376,7 +376,7 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -409,8 +409,8 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
             h7l ^= DEC64LE(block + 56);
 
             h0h ^= DEC64LE(block + 64);
-            h4l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF;
-            h4l ^= ((sph_u64) gid) << 32;
+            h0l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF;
+            h0l ^= ((sph_u64) gid) << 32;
             h1h ^= 0x80;
         }
         else if (i == 2) {
@@ -436,7 +436,7 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
 
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("jh_80 output: \n");
         printhash(*hash);
     }
@@ -452,7 +452,7 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -502,7 +502,7 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[7] = a21;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("keccak_80 output: \n");
         printhash(*hash);
     }
@@ -518,7 +518,7 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -668,7 +668,7 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[7] = p7;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("skein_80 output: \n");
         printhash(*hash);
     }
@@ -684,9 +684,9 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
-        printblock(block, 80);
+-       printblock(block, 80);
     }
     #endif
 
@@ -752,7 +752,7 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[15] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("luffa_80 output: \n");
         printhash(*hash);
     }
@@ -768,7 +768,7 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -836,7 +836,7 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[15] = xf;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("cubehash_80 output: \n");
         printhash(*hash);
     }
@@ -852,7 +852,7 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -934,7 +934,7 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[15] = hF;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("shavite_80 output: \n");
         printhash(*hash);
     }
@@ -950,7 +950,7 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -997,7 +997,8 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     C0 ^= DEC32LE(block + 64);
     C1 ^= DEC32LE(block + 68);
     C2 ^= DEC32LE(block + 72);
-    C3 ^= DEC32LE(block + 76);
+    // C3 ^= DEC32LE(block + 76);
+    C3 ^= gid;
 
     ONE_ROUND_BIG(0_, 0,  3, 23, 17, 27);
     ONE_ROUND_BIG(1_, 1, 28, 19, 22,  7);
@@ -1080,7 +1081,7 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[15] = B7;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("simd_80 output: \n");
         printhash(*hash);
     }
@@ -1096,7 +1097,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -1176,7 +1177,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[7] = (DEC64LE(block +  56)) ^ Vb31 ^ W31 ^ WB1;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("echo_80 output: \n");
         printhash(*hash);
     }
@@ -1184,7 +1185,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// hamsi_80 - WORKS
+// hamsi_80 - WORKS - TODO: add nonce
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1192,7 +1193,7 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -1207,11 +1208,17 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
     sph_u32 h[16] = { c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, cA, cB, cC, cD, cE, cF };
 
     #define buf(u) block[i + u]
-    for(int i = 0; i < 80; i += 8) {
+    for(int i = 0; i < 72; i += 8) {
         INPUT_BIG;
         P_BIG;
         T_BIG;
     }
+    #undef buf
+    // TODO: fix
+    #define buf(u) ((u < 4)? block[72+u]:(((uchar*)&gid)[8-u]))
+    INPUT_BIG;
+    P_BIG;
+    T_BIG;
     #undef buf
     #define buf(u) (u == 0 ? 0x80 : 0)
     INPUT_BIG;
@@ -1228,7 +1235,7 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
         hash->h4[u] = SWAP4(h[u]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("hamsi_80 output: \n");
         printhash(*hash);
     }
@@ -1244,7 +1251,7 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -1343,7 +1350,7 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[15] = SWAP4(S30);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("fugue_80 output: \n");
         printhash(*hash);
     }
@@ -1360,7 +1367,7 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-offset]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -1411,8 +1418,8 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
 
     M0 = DEC32LE(block +  64);
     M1 = DEC32LE(block +  68);
-    M3 = DEC32LE(block +  76);
-    M2 = gid;
+    M2 = DEC32LE(block +  72);
+    M3 = gid;
     M4 = 0x80;
     M5 = M6 = M7 = M8 = M9 = MA = MB = MC = MD = ME = MF = 0;
 
@@ -1445,7 +1452,7 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     hash->h4[15] = BF;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("shabal_80 output: \n");
         printhash(*hash);
     }
@@ -1461,7 +1468,7 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -1559,7 +1566,7 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
     hash->h8[7] = state[7] ^ n7 ^ temp7;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("whirlpool_80 output: \n");
         printhash(*hash);
     }
@@ -1575,7 +1582,7 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("input: \n");
         printblock(block, 80);
     }
@@ -1597,7 +1604,7 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
     for(int i = 0; i < 8; ++i) hash->h8[i] = SWAP8(SHA512Out[i]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("sha512_80 output: \n");
         printhash(*hash);
     }
@@ -1658,7 +1665,7 @@ __kernel void search0(__global hash_t* hashes)
     hash->h8[7] = SWAP8(H7);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("blake output: \n");
         printhash(*hash);
     }
@@ -1726,7 +1733,7 @@ __kernel void search1(__global hash_t* hashes)
     hash->h8[7] = BMW_h1[15];
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("bmw output: \n");
         printhash(*hash);
     }
@@ -1779,7 +1786,7 @@ __kernel void search2(__global hash_t* hashes)
         hash->h8[u] = H[u + 8];
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("groestl output: \n");
         printhash(*hash);
     }
@@ -1837,7 +1844,7 @@ __kernel void search3(__global hash_t* hashes)
     hash->h8[7] = h7l;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("jh output: \n");
         printhash(*hash);
     }
@@ -1889,7 +1896,7 @@ __kernel void search4(__global hash_t* hashes)
     hash->h8[7] = a21;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("keccak output: \n");
         printhash(*hash);
     }
@@ -1930,7 +1937,7 @@ __kernel void search5(__global hash_t* hashes)
     hash->h8[7] = h7;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("skein output: \n");
         printhash(*hash);
     }
@@ -2003,7 +2010,7 @@ __kernel void search6(__global hash_t* hashes)
     hash->h4[15] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("luffa output: \n");
         printhash(*hash);
     }
@@ -2073,7 +2080,7 @@ __kernel void search7(__global hash_t* hashes)
     hash->h4[15] = xf;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("cubehash output: \n");
         printhash(*hash);
     }
@@ -2159,7 +2166,7 @@ __kernel void search8(__global hash_t* hashes)
     hash->h4[15] = hF;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("shavite output: \n");
         printhash(*hash);
     }
@@ -2285,7 +2292,7 @@ __kernel void search9(__global hash_t* hashes)
     hash->h4[15] = B7;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("simd output: \n");
         printhash(*hash);
     }
@@ -2379,7 +2386,7 @@ __kernel void searchA(__global hash_t* hashes)
     hashp->h8[7] = hash.h8[7] ^ Vb31 ^ W31 ^ WB1;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("echo output: \n");
         printhash(*hashp);
     }
@@ -2430,7 +2437,7 @@ __kernel void searchB(__global hash_t* hashes)
         hashp->h4[u] = SWAP4(h[u]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("hamsi output: \n");
         printhash(*hashp);
     }
@@ -2543,7 +2550,7 @@ __kernel void searchC(__global hash_t* hashes)
     *hashp = hash;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("fugue output: \n");
         printhash(*hashp);
     }
@@ -2624,7 +2631,7 @@ __kernel void searchD(__global hash_t* hashes)
     hash->h4[15] = BF;
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("shabal output: \n");
         printhash(*hash);
     }
@@ -2726,7 +2733,7 @@ __kernel void searchE(__global hash_t* hashes)
         hash->h8[i] = state[i];
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("whirlpool output: \n");
         printhash(*hash);
     }
@@ -2755,7 +2762,7 @@ __kernel void searchF(__global hash_t* hashes)
     for(int i = 0; i < 8; ++i) hash->h8[i] = SWAP8(SHA512Out[i]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("sha512 output: \n");
         printhash(*hash);
     }
@@ -2772,7 +2779,7 @@ __kernel void output(__global hash_t* hashes,
     __global hash_t *hash = &(hashes[gid-offset]);
 
     #ifdef DEBUG_PRINT
-    if (!gid) {
+    if (gid == 0x12345) {
         printf("output: \n");
         printhash(*hash);
     }
