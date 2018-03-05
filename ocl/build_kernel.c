@@ -104,7 +104,7 @@ typedef struct _algorithm_get_settings_t {
 
 static algorithm_get_settings_t algo[] = {
   // 64-byte kernels
-	{"x16r_blake.cl",		false,	false },
+	{"x11evo_blake.cl",		false,	false },
 	{"x11evo_bmw.cl",		false,	true },
 	{"x11evo_groestl.cl",	false,	true },
 	{"x11evo_skein.cl",		false,	true },
@@ -114,29 +114,7 @@ static algorithm_get_settings_t algo[] = {
 	{"x11evo_cubehash.cl",	true,	true },
 	{"x11evo_shavite.cl",	false,	false },
 	{"x11evo_simd.cl",		false,	false },
-	{"x11evo_echo.cl",		false,	false },
-	{"x16r_hamsi.cl",		false,	false },
-	{"x16r_fugue.cl",		true,	false },
-	{"x16r_shabal.cl",		false,	false },
-	{"x16r_whirlpool.cl",		false,	false },
-	{"x16r_sha512.cl",		true,	true },
-  // 80-byte kernels
-	{"x11evo_blake_80.cl",		true,	false },
-	{"x16r_bmw_80.cl",		true,	false },
-	{"x16r_groestl_80.cl",	true,	false },
-	{"x16r_skein_80.cl",		true,	false },
-	{"x16r_jh_80.cl",		true,	false },
-	{"x16r_keccak_80.cl",	false,	true },
-	{"x16r_luffa_80.cl",		true,	false },
-	{"x16r_cubehash_80.cl",	true,	false },
-	{"x16r_shavite_80.cl",	true,	false },
-	{"x16r_simd_80.cl",		true,	false },
-	{"x16r_echo_80.cl",		true,	false },
-	{"x16r_hamsi_80.cl",		false,	true },
-	{"x16r_fugue_80.cl",		false,	false },
-	{"x16r_shabal_80.cl",		true,	false },
-	{"x16r_whirlpool_80.cl",		true,	false },
-	{"x16r_sha512_80.cl",		false,	false },
+	{"x11evo_echo.cl",		false,	false }
 };
 
 
@@ -167,10 +145,6 @@ char *generateSource(const char *code)
 			idx = elem - 'A' + 10;
 		else
 			idx = elem - '0';
-
-    // Use 80-byte kernel for first algo
-    if (i == 0)
-      idx += 16;
 
 		// calc swap requirements
 		if (curState != algo[idx].req_inverted) {
