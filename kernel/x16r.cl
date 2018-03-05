@@ -37,7 +37,7 @@
 // #define DEBUG_PRINT
 
 #ifdef DEBUG_PRINT
-// #pragma OPENCL EXTENSION cl_amd_printf : enable
+#pragma OPENCL EXTENSION cl_amd_printf : enable
 #endif
 
 #if __ENDIAN_LITTLE__
@@ -150,7 +150,7 @@ void printblock(__global unsigned char* block, size_t len) {
 
 // 80-byte hash functions
 
-// blake_80 - WORKS
+// blake_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -218,7 +218,7 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// bmw_80 - WORKS
+// bmw_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -299,7 +299,7 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// groestl_80 - WORKS
+// groestl_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -368,7 +368,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// jh_80 - WORKS
+// jh_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -444,7 +444,7 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// keccak_80 - WORKS
+// keccak_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -510,7 +510,7 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// skein_80 - WORKS
+// skein_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -676,7 +676,7 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// luffa_80 - WORKS
+// luffa_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -760,7 +760,7 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// cubehash_80 - WORKS
+// cubehash_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -844,7 +844,7 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// shavite_80 - WORKS
+// shavite_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -942,7 +942,7 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// simd_80 - WORKS
+// simd_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1089,7 +1089,7 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// echo_80 - WORKS
+// echo_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1185,7 +1185,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// hamsi_80 - WORKS
+// hamsi_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1242,7 +1242,7 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// fugue_80 - WORKS
+// fugue_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1357,7 +1357,7 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// shabal_80 - WORKS
+// shabal_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1459,7 +1459,7 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// whirlpool_80 - WORKS
+// whirlpool_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1573,7 +1573,7 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// sha512_80 - WORKS
+// sha512_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 {
@@ -1613,7 +1613,7 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 
 // 64-byte hash functions
 
-// blake - WORKS
+// blake
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search0(__global hash_t* hashes)
 {
@@ -1672,7 +1672,7 @@ __kernel void search0(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// bmw - WORKS
+// bmw
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search1(__global hash_t* hashes)
 {
@@ -1740,7 +1740,7 @@ __kernel void search1(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// groestl - WORKS
+// groestl
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search2(__global hash_t* hashes)
 {
@@ -1793,7 +1793,7 @@ __kernel void search2(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// jh - WORKS
+// jh
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search3(__global hash_t* hashes)
 {
@@ -1851,7 +1851,7 @@ __kernel void search3(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// keccak - WORKS
+// keccak
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search4(__global hash_t* hashes)
 {
@@ -1903,7 +1903,7 @@ __kernel void search4(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// skein - WORKS
+// skein
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search5(__global hash_t* hashes)
 {
@@ -1944,7 +1944,7 @@ __kernel void search5(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// luffa - WORKS
+// luffa
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search6(__global hash_t* hashes)
 {
@@ -2017,7 +2017,7 @@ __kernel void search6(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// cubehash - WORKS
+// cubehash
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search7(__global hash_t* hashes)
 {
@@ -2087,7 +2087,7 @@ __kernel void search7(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// shavite - WORKS
+// shavite
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search8(__global hash_t* hashes)
 {
@@ -2173,7 +2173,7 @@ __kernel void search8(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// simd - WORKS
+// simd
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search9(__global hash_t* hashes)
 {
@@ -2299,7 +2299,7 @@ __kernel void search9(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// echo - WORKS
+// echo
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchA(__global hash_t* hashes)
 {
@@ -2393,7 +2393,7 @@ __kernel void searchA(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// hamsi - WORKS
+// hamsi
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchB(__global hash_t* hashes)
 {
@@ -2444,7 +2444,7 @@ __kernel void searchB(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// fugue - WORKS
+// fugue
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchC(__global hash_t* hashes)
 {
@@ -2557,7 +2557,7 @@ __kernel void searchC(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// shabal - WORKS
+// shabal
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchD(__global hash_t* hashes)
 {
@@ -2638,7 +2638,7 @@ __kernel void searchD(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// whirlpool - WORKS
+// whirlpool
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchE(__global hash_t* hashes)
 {
@@ -2740,7 +2740,7 @@ __kernel void searchE(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// sha512 - WORKS
+// sha512
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void searchF(__global hash_t* hashes)
 {
