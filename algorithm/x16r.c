@@ -196,16 +196,16 @@ static inline void xhash(void *state, const void *input,
 			sph_groestl512_close(&ctx.groestl, out);
 			break;
 		case 3:
-			sph_skein512(&ctx.skein, in, size);
-			sph_skein512_close(&ctx.skein, out);
-			break;
-		case 4:
 			sph_jh512(&ctx.jh, in, size);
 			sph_jh512_close(&ctx.jh, out);
 			break;
-		case 5:
+		case 4:
 			sph_keccak512(&ctx.keccak, in, size);
 			sph_keccak512_close(&ctx.keccak, out);
+			break;
+		case 5:
+			sph_skein512(&ctx.skein, in, size);
+			sph_skein512_close(&ctx.skein, out);
 			break;
 		case 6:
 			sph_luffa512(&ctx.luffa, in, size);
