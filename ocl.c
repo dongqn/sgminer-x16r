@@ -527,7 +527,7 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
   }
 
   // Load kernels
-  applog(LOG_NOTICE, "Initialising kernel %s with%s bitalign, %spatched BFI, nfactor %d, n %d",
+  applog(LOG_DEBUG, "Initialising kernel %s with%s bitalign, %spatched BFI, nfactor %d, n %d",
          filename, clState->hasBitAlign ? "" : "out", build_data->patch_bfi ? "" : "un",
          algorithm->nfactor, algorithm->n);
 
