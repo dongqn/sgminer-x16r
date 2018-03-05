@@ -686,7 +686,7 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
     #ifdef DEBUG_PRINT
     if (gid == 0x12345) {
         printf("input: \n");
--       printblock(block, 80);
+        printblock(block, 80);
     }
     #endif
 
@@ -2450,7 +2450,7 @@ __kernel void searchC(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
-    __local  hash_t hash;
+    hash_t hash;
     __global hash_t *hashp = &(hashes[gid-offset]);
 
     //mixtab
