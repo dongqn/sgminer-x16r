@@ -596,7 +596,8 @@ static cl_int queue_x16r_kernel(struct __clState *clState,
   // 15 intermediate 64-byte kernels
   kernel = clState->extra_kernels;
   CL_SET_ARG_0(clState->padbuffer8);
-  for (unsigned int i = 1; i < 15; ++i) {
+  unsigned int i;
+  for (i = 1; i < 15; ++i) {
     CL_NEXTKERNEL_SET_ARG_0(clState->padbuffer8);
   }
 
