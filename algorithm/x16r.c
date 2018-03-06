@@ -105,7 +105,8 @@ static void getAlgoString(const uint32_t* prevblock, char *output)
 	char *sptr = output;
 	uint8_t* data = (uint8_t*)prevblock;
 
-	for (uint8_t j = 0; j < 16; j++) {
+	uint8_t j;
+	for (j = 0; j < 16; j++) {
 		uint8_t b = (j + 8) % 16 >> 1; // 16 ascii hex chars, little endian
 		uint8_t algoDigit = (j & 1) ? data[b] & 0xF : data[b] >> 4;
 		if (algoDigit >= 10)
