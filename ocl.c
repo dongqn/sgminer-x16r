@@ -925,7 +925,8 @@ out:
   }
 
   if (algorithm->type == ALGO_X16R) {
-    applog(LOG_NOTICE, "Switching algo order to %s", thr->curSequence);
+    applog(LOG_NOTICE, "[THR%d] Switching algo order to %s",
+      thr->id, thr->curSequence);
     char kernel_name[9]; // max: search9i + 0x0
     snprintf(kernel_name, 9, "search%ci", thr->curSequence[0]);
     clState->kernel = clCreateKernel(clState->program, kernel_name, &status);
