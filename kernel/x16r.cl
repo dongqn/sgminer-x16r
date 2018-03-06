@@ -233,6 +233,7 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
     #endif
 
     sph_u64 BMW_H[16];
+    #pragma unroll 16
     for(unsigned u = 0; u < 16; u++)
         BMW_H[u] = BMW_IV512[u];
 
@@ -314,6 +315,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     #endif
 
     sph_u64 H[16];
+    #pragma unroll 15
     for (unsigned int u = 0; u < 15; u ++)
         H[u] = 0;
     H[15] = ((sph_u64)(512 & 0xFF) << 56) | ((sph_u64)(512 & 0xFF00) << 40);
@@ -333,6 +335,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     m[9] &= 0x00000000FFFFFFFF;
     m[9] ^= ((sph_u64) gid) << 32;
 
+    #pragma unroll 16
     for (unsigned int u = 0; u < 16; u ++)
         g[u] = m[u] ^ H[u];
     m[10] = 0x80; g[10] = m[10] ^ H[10];
@@ -345,17 +348,21 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
     PERM_BIG_P(g);
     PERM_BIG_Q(m);
 
+    #pragma unroll 16
     for (unsigned int u = 0; u < 16; u ++)
         H[u] ^= g[u] ^ m[u];
     sph_u64 xH[16];
 
+    #pragma unroll 16
     for (unsigned int u = 0; u < 16; u ++)
         xH[u] = H[u];
     PERM_BIG_P(xH);
 
+    #pragma unroll 16
     for (unsigned int u = 0; u < 16; u ++)
         H[u] ^= xH[u];
 
+    #pragma unroll 8
     for (unsigned int u = 0; u < 8; u ++)
         hash->h8[u] = H[u + 8];
 
@@ -386,42 +393,40 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
     sph_u64 h4h = C64e(0x0169e60541e34a69), h4l = C64e(0x46b58a8e2e6fe65a), h5h = C64e(0x1047a7d0c1843c24), h5l = C64e(0x3b6e71b12d5ac199), h6h = C64e(0xcf57f6ec9db1f856), h6l = C64e(0xa706887c5716b156), h7h = C64e(0xe3c2fcdfe68517fb), h7l = C64e(0x545a4678cc8cdd4b);
     sph_u64 tmp;
 
-    for (int i = 0; i < 3; i++)
-    {
-        if (i == 0) {
-            h0h ^= DEC64LE(block +  0);
-            h0l ^= DEC64LE(block +  8);
-            h1h ^= DEC64LE(block + 16);
-            h1l ^= DEC64LE(block + 24);
-            h2h ^= DEC64LE(block + 32);
-            h2l ^= DEC64LE(block + 40);
-            h3h ^= DEC64LE(block + 48);
-            h3l ^= DEC64LE(block + 56);
-        }
-        else if (i == 1) {
-            h4h ^= DEC64LE(block +  0);
-            h4l ^= DEC64LE(block +  8);
-            h5h ^= DEC64LE(block + 16);
-            h5l ^= DEC64LE(block + 24);
-            h6h ^= DEC64LE(block + 32);
-            h6l ^= DEC64LE(block + 40);
-            h7h ^= DEC64LE(block + 48);
-            h7l ^= DEC64LE(block + 56);
+    h0h ^= DEC64LE(block +  0);
+    h0l ^= DEC64LE(block +  8);
+    h1h ^= DEC64LE(block + 16);
+    h1l ^= DEC64LE(block + 24);
+    h2h ^= DEC64LE(block + 32);
+    h2l ^= DEC64LE(block + 40);
+    h3h ^= DEC64LE(block + 48);
+    h3l ^= DEC64LE(block + 56);
 
-            h0h ^= DEC64LE(block + 64);
-            h0l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF;
-            h0l ^= ((sph_u64) gid) << 32;
-            h1h ^= 0x80;
-        }
-        else if (i == 2) {
-            h4h ^= DEC64LE(block + 64);
-            h4l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF;
-            h4l ^= ((sph_u64) gid) << 32;
-            h5h ^= 0x80;
-            h3l ^= 0x8002000000000000;
-        }
-        E8;
-    }
+    E8;
+
+    h4h ^= DEC64LE(block +  0);
+    h4l ^= DEC64LE(block +  8);
+    h5h ^= DEC64LE(block + 16);
+    h5l ^= DEC64LE(block + 24);
+    h6h ^= DEC64LE(block + 32);
+    h6l ^= DEC64LE(block + 40);
+    h7h ^= DEC64LE(block + 48);
+    h7l ^= DEC64LE(block + 56);
+
+    h0h ^= DEC64LE(block + 64);
+    h0l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF;
+    h0l ^= ((sph_u64) gid) << 32;
+    h1h ^= 0x80;
+
+    E8;
+
+    h4h ^= DEC64LE(block + 64);
+    h4l ^= DEC64LE(block + 72) & 0x00000000FFFFFFFF;
+    h4l ^= ((sph_u64) gid) << 32;
+    h5h ^= 0x80;
+    h3l ^= 0x8002000000000000;
+
+    E8;
 
     h7l ^= 0x8002000000000000;
 
@@ -539,7 +544,6 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
     M9 = DEC64LE(block + 72);
     M9 &= 0x00000000FFFFFFFF;
     M9 ^= ((sph_u64) gid) << 32;
-    // ((uint*)&M9)[1] = gid;
 
     sph_u64 h0 = SPH_C64(0x4903ADFF749C51CE);
     sph_u64 h1 = SPH_C64(0x0D95DE399746DF03);
@@ -707,41 +711,44 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
     M6 = DEC32BE(block + 24);
     M7 = DEC32BE(block + 28);
 
-    for(uint i = 0; i < 5; i++)
-    {
-        MI5;
-        LUFFA_P5;
+    MI5;
+    LUFFA_P5;
+    M0 = DEC32BE(block + 32);
+    M1 = DEC32BE(block + 36);
+    M2 = DEC32BE(block + 40);
+    M3 = DEC32BE(block + 44);
+    M4 = DEC32BE(block + 48);
+    M5 = DEC32BE(block + 52);
+    M6 = DEC32BE(block + 56);
+    M7 = DEC32BE(block + 60);
 
-        if(i == 0) {
-            M0 = DEC32BE(block + 32);
-            M1 = DEC32BE(block + 36);
-            M2 = DEC32BE(block + 40);
-            M3 = DEC32BE(block + 44);
-            M4 = DEC32BE(block + 48);
-            M5 = DEC32BE(block + 52);
-            M6 = DEC32BE(block + 56);
-            M7 = DEC32BE(block + 60);
-        } else if(i == 1) {
-            M0 = DEC32BE(block + 64);
-            M1 = DEC32BE(block + 68);
-            M2 = DEC32BE(block + 72);
-            M3 = SWAP4(gid);
-            // M3 = DEC32BE(block + 76);
-            M4 = 0x80000000;
-            M5 = M6 = M7 = 0;
-        } else if(i == 2) {
-            M0 = M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
-        } else if(i == 3) {
-            hash->h4[0] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
-            hash->h4[1] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
-            hash->h4[2] = SWAP4(V02 ^ V12 ^ V22 ^ V32 ^ V42);
-            hash->h4[3] = SWAP4(V03 ^ V13 ^ V23 ^ V33 ^ V43);
-            hash->h4[4] = SWAP4(V04 ^ V14 ^ V24 ^ V34 ^ V44);
-            hash->h4[5] = SWAP4(V05 ^ V15 ^ V25 ^ V35 ^ V45);
-            hash->h4[6] = SWAP4(V06 ^ V16 ^ V26 ^ V36 ^ V46);
-            hash->h4[7] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
-        }
-    }
+    MI5;
+    LUFFA_P5;
+    M0 = DEC32BE(block + 64);
+    M1 = DEC32BE(block + 68);
+    M2 = DEC32BE(block + 72);
+    M3 = SWAP4(gid);
+    M4 = 0x80000000;
+    M5 = M6 = M7 = 0;
+
+    MI5;
+    LUFFA_P5;
+    M0 = M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
+
+    MI5;
+    LUFFA_P5;
+    hash->h4[0] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
+    hash->h4[1] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
+    hash->h4[2] = SWAP4(V02 ^ V12 ^ V22 ^ V32 ^ V42);
+    hash->h4[3] = SWAP4(V03 ^ V13 ^ V23 ^ V33 ^ V43);
+    hash->h4[4] = SWAP4(V04 ^ V14 ^ V24 ^ V34 ^ V44);
+    hash->h4[5] = SWAP4(V05 ^ V15 ^ V25 ^ V35 ^ V45);
+    hash->h4[6] = SWAP4(V06 ^ V16 ^ V26 ^ V36 ^ V46);
+    hash->h4[7] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
+
+    MI5;
+    LUFFA_P5;
+
     hash->h4[8] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
     hash->h4[9] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
     hash->h4[10] = SWAP4(V02 ^ V12 ^ V22 ^ V32 ^ V42);
@@ -792,30 +799,29 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
     x6 ^= DEC32LE(block + 24);
     x7 ^= DEC32LE(block + 28);
 
-    for (int i = 0; i < 13; i++) {
-        SIXTEEN_ROUNDS;
+    SIXTEEN_ROUNDS;
+    x0 ^= DEC32LE(block + 32);
+    x1 ^= DEC32LE(block + 36);
+    x2 ^= DEC32LE(block + 40);
+    x3 ^= DEC32LE(block + 44);
+    x4 ^= DEC32LE(block + 48);
+    x5 ^= DEC32LE(block + 52);
+    x6 ^= DEC32LE(block + 56);
+    x7 ^= DEC32LE(block + 60);
 
-        if (i == 0) {
-            x0 ^= DEC32LE(block + 32);
-            x1 ^= DEC32LE(block + 36);
-            x2 ^= DEC32LE(block + 40);
-            x3 ^= DEC32LE(block + 44);
-            x4 ^= DEC32LE(block + 48);
-            x5 ^= DEC32LE(block + 52);
-            x6 ^= DEC32LE(block + 56);
-            x7 ^= DEC32LE(block + 60);
-        }
-        else if (i == 1) {
-            x0 ^= DEC32LE(block + 64);
-            x1 ^= DEC32LE(block + 68);
-            x2 ^= DEC32LE(block + 72);
-            // x3 ^= DEC32LE(block + 76);
-            x3 ^= gid;
-            x4 ^= 0x80;
-        }
-        else if (i == 2) {
-            xv ^= SPH_C32(1);
-        }
+    SIXTEEN_ROUNDS;
+    x0 ^= DEC32LE(block + 64);
+    x1 ^= DEC32LE(block + 68);
+    x2 ^= DEC32LE(block + 72);
+    x3 ^= gid;
+    x4 ^= 0x80;
+
+    SIXTEEN_ROUNDS;
+    xv ^= SPH_C32(1);
+
+    #pragma unroll 10
+    for (int i = 0; i < 10; i++) {
+        SIXTEEN_ROUNDS;
     }
 
     hash->h4[0] = x0;
@@ -906,7 +912,6 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
     rk10 = DEC32LE(block + 64);
     rk11 = DEC32LE(block + 68);
     rk12 = DEC32LE(block + 72);
-    // rk13 = DEC32LE(block + 76);
     rk13 = gid;
     rk14 = 0x80;
     rk15 = rk16 = rk17 = rk18 = rk19 = rk1A = 0;
@@ -958,9 +963,11 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
 
     s32 q[256];
     unsigned char x[128];
+    #pragma unroll 80
     for(unsigned int i = 0; i < 80; i++)
         x[i] = block[i];
     ((sph_u32*)x)[19] = gid;
+    #pragma unroll 48
     for(unsigned int i = 80; i < 128; i++)
         x[i] = 0;
 
@@ -970,6 +977,7 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     u32 D0 = C32(0x09254899), D1 = C32(0xD699C7BC), D2 = C32(0x9019B6DC), D3 = C32(0x2B9022E4), D4 = C32(0x8FA14956), D5 = C32(0x21BF9BD3), D6 = C32(0xB94D0943), D7 = C32(0x6FFDDC22);
 
     FFT256(0, 1, 0, ll1);
+    #pragma unroll 256
     for (int i = 0; i < 256; i ++) {
         s32 tq = q[i] + yoff_b_n[i];
         tq = REDS2(tq);
@@ -997,7 +1005,6 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
     C0 ^= DEC32LE(block + 64);
     C1 ^= DEC32LE(block + 68);
     C2 ^= DEC32LE(block + 72);
-    // C3 ^= DEC32LE(block + 76);
     C3 ^= gid;
 
     ONE_ROUND_BIG(0_, 0,  3, 23, 17, 27);
@@ -1163,6 +1170,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
     WF0 = 0x280;
     WF1 = 0;
 
+    #pragma unroll 10
     for (unsigned u = 0; u < 10; u ++) {
         BIG_ROUND;
     }
@@ -1208,6 +1216,7 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
     sph_u32 h[16] = { c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, cA, cB, cC, cD, cE, cF };
 
     #define buf(u) block[i + u]
+    #pragma unroll 9
     for(int i = 0; i < 72; i += 8) {
         INPUT_BIG;
         P_BIG;
@@ -1230,6 +1239,7 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
     T_BIG;
     #undef buf
 
+    #pragma unroll 16
     for (unsigned u = 0; u < 16; u ++)
         hash->h4[u] = SWAP4(h[u]);
 
@@ -1286,7 +1296,6 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     FUGUE512_3((DEC32BE(block+36)), (DEC32BE(block+40)), (DEC32BE(block+44)));
     FUGUE512_3((DEC32BE(block+48)), (DEC32BE(block+52)), (DEC32BE(block+56)));
     FUGUE512_3((DEC32BE(block+60)), (DEC32BE(block+64)), (DEC32BE(block+68)));
-    // FUGUE512_F((DEC32BE(block+72)), (DEC32BE(block+76)), 0, (80<<3));
     FUGUE512_F((DEC32BE(block+72)), (SWAP4(gid)), 0, (80<<3));
 
     ROR3;
@@ -1295,11 +1304,13 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
     // apply round shift if necessary
     int i;
 
+    #pragma unroll 32
     for (i = 0; i < 32; i ++) {
         ROR3;
         CMIX36(S00, S01, S02, S04, S05, S06, S18, S19, S20);
         SMIX(S00, S01, S02, S03);
     }
+    #pragma unroll 13
     for (i = 0; i < 13; i ++) {
         S04 ^= S00;
         S09 ^= S00;
@@ -1426,6 +1437,7 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
     XOR_W;
     APPLY_P;
 
+    #pragma unroll 3
     for (unsigned i = 0; i < 3; i ++)
     {
         SWAP_BC;
@@ -1589,6 +1601,7 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 
     ulong W[16] = { 0UL }, SHA512Out[8];
 
+    #pragma unroll 10
     for(int i = 0; i < 10; ++i) W[i] = DEC64BE(block +  8*i);
 
     W[9] &= 0xFFFFFFFF00000000UL;
@@ -1600,6 +1613,7 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
 
     SHA512Block(W, SHA512Out);
 
+    #pragma unroll 8
     for(int i = 0; i < 8; ++i) hash->h8[i] = SWAP8(SHA512Out[i]);
 
     #ifdef DEBUG_PRINT
@@ -1680,6 +1694,7 @@ __kernel void search1(__global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     sph_u64 BMW_H[16];
+    #pragma unroll 16
     for (unsigned u = 0; u < 16; u++)
         BMW_H[u] = BMW_IV512[u];
 
@@ -1748,6 +1763,7 @@ __kernel void search2(__global hash_t* hashes)
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
 
     sph_u64 H[16];
+    #pragma unroll 16
     for (unsigned int u = 0; u < 15; u ++)
         H[u] = 0;
     H[15] = ((sph_u64)(512 & 0xFF) << 56) | ((sph_u64)(512 & 0xFF00) << 40);
@@ -1761,6 +1777,7 @@ __kernel void search2(__global hash_t* hashes)
     m[5] = hash->h8[5];
     m[6] = hash->h8[6];
     m[7] = hash->h8[7];
+    #pragma unroll 16
     for (unsigned int u = 0; u < 16; u ++)
         g[u] = m[u] ^ H[u];
     m[8] = 0x80; g[8] = m[8] ^ H[8];
@@ -1773,14 +1790,18 @@ __kernel void search2(__global hash_t* hashes)
     m[15] = 0x100000000000000; g[15] = m[15] ^ H[15];
     PERM_BIG_P(g);
     PERM_BIG_Q(m);
+    #pragma unroll 16
     for (unsigned int u = 0; u < 16; u ++)
         H[u] ^= g[u] ^ m[u];
     sph_u64 xH[16];
+    #pragma unroll 16
     for (unsigned int u = 0; u < 16; u ++)
         xH[u] = H[u];
     PERM_BIG_P(xH);
+    #pragma unroll 16
     for (unsigned int u = 0; u < 16; u ++)
         H[u] ^= xH[u];
+    #pragma unroll 8
     for (unsigned int u = 0; u < 8; u ++)
         hash->h8[u] = H[u + 8];
 
@@ -1804,32 +1825,31 @@ __kernel void search3(__global hash_t* hashes)
     sph_u64 h4h = C64e(0x0169e60541e34a69), h4l = C64e(0x46b58a8e2e6fe65a), h5h = C64e(0x1047a7d0c1843c24), h5l = C64e(0x3b6e71b12d5ac199), h6h = C64e(0xcf57f6ec9db1f856), h6l = C64e(0xa706887c5716b156), h7h = C64e(0xe3c2fcdfe68517fb), h7l = C64e(0x545a4678cc8cdd4b);
     sph_u64 tmp;
 
-    for(int i = 0; i < 2; i++)
-    {
-        if (i == 0) {
-            h0h ^= hash->h8[0];
-            h0l ^= hash->h8[1];
-            h1h ^= hash->h8[2];
-            h1l ^= hash->h8[3];
-            h2h ^= hash->h8[4];
-            h2l ^= hash->h8[5];
-            h3h ^= hash->h8[6];
-            h3l ^= hash->h8[7];
-        } else if(i == 1) {
-            h4h ^= hash->h8[0];
-            h4l ^= hash->h8[1];
-            h5h ^= hash->h8[2];
-            h5l ^= hash->h8[3];
-            h6h ^= hash->h8[4];
-            h6l ^= hash->h8[5];
-            h7h ^= hash->h8[6];
-            h7l ^= hash->h8[7];
+    h0h ^= hash->h8[0];
+    h0l ^= hash->h8[1];
+    h1h ^= hash->h8[2];
+    h1l ^= hash->h8[3];
+    h2h ^= hash->h8[4];
+    h2l ^= hash->h8[5];
+    h3h ^= hash->h8[6];
+    h3l ^= hash->h8[7];
 
-            h0h ^= 0x80;
-            h3l ^= 0x2000000000000;
-        }
-        E8;
-    }
+    E8;
+
+    h4h ^= hash->h8[0];
+    h4l ^= hash->h8[1];
+    h5h ^= hash->h8[2];
+    h5l ^= hash->h8[3];
+    h6h ^= hash->h8[4];
+    h6l ^= hash->h8[5];
+    h7h ^= hash->h8[6];
+    h7l ^= hash->h8[7];
+
+    h0h ^= 0x80;
+    h3l ^= 0x2000000000000;
+
+    E8;
+
     h4h ^= 0x80;
     h7l ^= 0x2000000000000;
 
@@ -1968,36 +1988,39 @@ __kernel void search6(__global hash_t* hashes)
     M6 = SWAP4(hash->h4[6]);
     M7 = SWAP4(hash->h4[7]);
 
-    for(uint i = 0; i < 5; i++)
-    {
-        MI5;
-        LUFFA_P5;
+    MI5;
+    LUFFA_P5;
+    M0 = SWAP4(hash->h4[8]);
+    M1 = SWAP4(hash->h4[9]);
+    M2 = SWAP4(hash->h4[10]);
+    M3 = SWAP4(hash->h4[11]);
+    M4 = SWAP4(hash->h4[12]);
+    M5 = SWAP4(hash->h4[13]);
+    M6 = SWAP4(hash->h4[14]);
+    M7 = SWAP4(hash->h4[15]);
 
-        if(i == 0) {
-            M0 = SWAP4(hash->h4[8]);
-            M1 = SWAP4(hash->h4[9]);
-            M2 = SWAP4(hash->h4[10]);
-            M3 = SWAP4(hash->h4[11]);
-            M4 = SWAP4(hash->h4[12]);
-            M5 = SWAP4(hash->h4[13]);
-            M6 = SWAP4(hash->h4[14]);
-            M7 = SWAP4(hash->h4[15]);
-        } else if(i == 1) {
-            M0 = 0x80000000;
-            M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
-        } else if(i == 2) {
-            M0 = M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
-        } else if(i == 3) {
-            hash->h4[0] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
-            hash->h4[1] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
-            hash->h4[2] = SWAP4(V02 ^ V12 ^ V22 ^ V32 ^ V42);
-            hash->h4[3] = SWAP4(V03 ^ V13 ^ V23 ^ V33 ^ V43);
-            hash->h4[4] = SWAP4(V04 ^ V14 ^ V24 ^ V34 ^ V44);
-            hash->h4[5] = SWAP4(V05 ^ V15 ^ V25 ^ V35 ^ V45);
-            hash->h4[6] = SWAP4(V06 ^ V16 ^ V26 ^ V36 ^ V46);
-            hash->h4[7] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
-        }
-    }
+    MI5;
+    LUFFA_P5;
+    M0 = 0x80000000;
+    M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
+
+    MI5;
+    LUFFA_P5;
+    M0 = M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
+
+    MI5;
+    LUFFA_P5;
+    hash->h4[0] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
+    hash->h4[1] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
+    hash->h4[2] = SWAP4(V02 ^ V12 ^ V22 ^ V32 ^ V42);
+    hash->h4[3] = SWAP4(V03 ^ V13 ^ V23 ^ V33 ^ V43);
+    hash->h4[4] = SWAP4(V04 ^ V14 ^ V24 ^ V34 ^ V44);
+    hash->h4[5] = SWAP4(V05 ^ V15 ^ V25 ^ V35 ^ V45);
+    hash->h4[6] = SWAP4(V06 ^ V16 ^ V26 ^ V36 ^ V46);
+    hash->h4[7] = SWAP4(V07 ^ V17 ^ V27 ^ V37 ^ V47);
+
+    MI5;
+    LUFFA_P5;
 
     hash->h4[8] = SWAP4(V00 ^ V10 ^ V20 ^ V30 ^ V40);
     hash->h4[9] = SWAP4(V01 ^ V11 ^ V21 ^ V31 ^ V41);
@@ -2042,23 +2065,25 @@ __kernel void search7(__global hash_t* hashes)
     x6 ^= hash->h4[6];
     x7 ^= hash->h4[7];
 
-    for (int i = 0; i < 13; i ++) {
-        SIXTEEN_ROUNDS;
+    SIXTEEN_ROUNDS;
+    x0 ^= hash->h4[8];
+    x1 ^= hash->h4[9];
+    x2 ^= hash->h4[10];
+    x3 ^= hash->h4[11];
+    x4 ^= hash->h4[12];
+    x5 ^= hash->h4[13];
+    x6 ^= hash->h4[14];
+    x7 ^= hash->h4[15];
 
-        if (i == 0) {
-            x0 ^= hash->h4[8];
-            x1 ^= hash->h4[9];
-            x2 ^= hash->h4[10];
-            x3 ^= hash->h4[11];
-            x4 ^= hash->h4[12];
-            x5 ^= hash->h4[13];
-            x6 ^= hash->h4[14];
-            x7 ^= hash->h4[15];
-        } else if(i == 1) {
-            x0 ^= 0x80;
-        } else if (i == 2) {
-            xv ^= SPH_C32(1);
-        }
+    SIXTEEN_ROUNDS;
+    x0 ^= 0x80;
+
+    SIXTEEN_ROUNDS;
+    xv ^= SPH_C32(1);
+
+    #pragma unroll 10
+    for (int i = 0; i < 10; i ++) {
+        SIXTEEN_ROUNDS;
     }
 
     hash->h4[0] = x0;
@@ -2182,8 +2207,10 @@ __kernel void search9(__global hash_t* hashes)
 
     s32 q[256];
     unsigned char x[128];
+    #pragma unroll 64
     for(unsigned int i = 0; i < 64; i++)
         x[i] = hash->h1[i];
+    #pragma unroll 64
     for(unsigned int i = 64; i < 128; i++)
         x[i] = 0;
 
@@ -2193,6 +2220,7 @@ __kernel void search9(__global hash_t* hashes)
     u32 D0 = C32(0x09254899), D1 = C32(0xD699C7BC), D2 = C32(0x9019B6DC), D3 = C32(0x2B9022E4), D4 = C32(0x8FA14956), D5 = C32(0x21BF9BD3), D6 = C32(0xB94D0943), D7 = C32(0x6FFDDC22);
 
     FFT256(0, 1, 0, ll1);
+    #pragma unroll 256
     for (int i = 0; i < 256; i ++) {
         s32 tq;
 
@@ -2323,6 +2351,7 @@ __kernel void searchA(__global hash_t* hashes)
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
+    #pragma unroll 8
     for (int i = 0; i < 8; i++) {
         hash.h8[i] = hashp->h8[i];
     }
@@ -2371,6 +2400,7 @@ __kernel void searchA(__global hash_t* hashes)
     WF0 = 0x200;
     WF1 = 0;
 
+    #pragma unroll 10
     for (unsigned u = 0; u < 10; u ++) {
         BIG_ROUND;
     }
@@ -2411,11 +2441,13 @@ __kernel void searchB(__global hash_t* hashes)
     sph_u32 m8, m9, mA, mB, mC, mD, mE, mF;
     sph_u32 h[16] = { c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, cA, cB, cC, cD, cE, cF };
 
+    #pragma unroll 8
     for (int i = 0; i < 8; i++) {
         hash.h8[i] = hashp->h8[i];
     }
 
     #define buf(u) hash.h1[i + u]
+    #pragma unroll 8
     for(int i = 0; i < 64; i += 8) {
         INPUT_BIG;
         P_BIG;
@@ -2432,6 +2464,7 @@ __kernel void searchB(__global hash_t* hashes)
     PF_BIG;
     T_BIG;
 
+    #pragma unroll 16
     for (unsigned u = 0; u < 16; u ++)
         hashp->h4[u] = SWAP4(h[u]);
 
@@ -2466,6 +2499,7 @@ __kernel void searchC(__global hash_t* hashes)
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
+    #pragma unroll 16
     for (int i = 0; i < 16; i++) {
         hash.h4[i] = SWAP4(hashp->h4[i]);
     }
@@ -2493,11 +2527,14 @@ __kernel void searchC(__global hash_t* hashes)
     // apply round shift if necessary
     int i;
 
+    #pragma unroll 32
     for (i = 0; i < 32; i ++) {
         ROR3;
         CMIX36(S00, S01, S02, S04, S05, S06, S18, S19, S20);
         SMIX(S00, S01, S02, S03);
     }
+
+    #pragma unroll 13
     for (i = 0; i < 13; i ++) {
         S04 ^= S00;
         S09 ^= S00;
@@ -2605,8 +2642,8 @@ __kernel void searchD(__global hash_t* hashes)
     XOR_W;
     APPLY_P;
 
-    for (unsigned i = 0; i < 3; i ++)
-    {
+    #pragma unroll 3
+    for (unsigned i = 0; i < 3; i ++) {
         SWAP_BC;
         XOR_W;
         APPLY_P;
@@ -2651,8 +2688,7 @@ __kernel void searchE(__global hash_t* hashes)
     int init = get_local_id(0);
     int step = get_local_size(0);
 
-    for (int i = init; i < 256; i += step)
-    {
+    for (int i = init; i < 256; i += step) {
       LT0[i] = plain_T0[i];
       LT1[i] = plain_T1[i];
       LT2[i] = plain_T2[i];
@@ -2680,8 +2716,7 @@ __kernel void searchE(__global hash_t* hashes)
     n7 = hash->h8[7];
 
     #pragma unroll 10
-    for (unsigned r = 0; r < 10; r ++)
-    {
+    for (unsigned r = 0; r < 10; r ++) {
         ROUND_KSCHED(plain_T, h, tmp, plain_RC[r]);
         TRANSFER(h, tmp);
         ROUND_WENC(plain_T, n, h, tmp);
@@ -2711,8 +2746,7 @@ __kernel void searchE(__global hash_t* hashes)
     n7 ^= h7;
 
     #pragma unroll 10
-    for (unsigned r = 0; r < 10; r ++)
-    {
+    for (unsigned r = 0; r < 10; r ++) {
         ROUND_KSCHED(LT, h, tmp, plain_RC[r]);
         TRANSFER(h, tmp);
         ROUND_WENC(plain_T, n, h, tmp);
@@ -2728,6 +2762,7 @@ __kernel void searchE(__global hash_t* hashes)
     state[6] ^= n6;
     state[7] ^= n7 ^ 0x2000000000000;
 
+    #pragma unroll 8
     for (unsigned i = 0; i < 8; i ++)
         hash->h8[i] = state[i];
 
@@ -2749,15 +2784,18 @@ __kernel void searchF(__global hash_t* hashes)
 
     sph_u64 W[16] = { 0UL }, SHA512Out[8];
 
+    #pragma unroll 8
     for(int i = 0; i < 8; ++i) W[i] = SWAP8(hash->h8[i]);
 
     W[8] = 0x8000000000000000;
     W[15] = 0x200;
 
+    #pragma unroll 8
     for(int i = 0; i < 8; ++i) SHA512Out[i] = SHA512_INIT[i];
 
     SHA512Block(W, SHA512Out);
 
+    #pragma unroll 8
     for(int i = 0; i < 8; ++i) hash->h8[i] = SWAP8(SHA512Out[i]);
 
     #ifdef DEBUG_PRINT
