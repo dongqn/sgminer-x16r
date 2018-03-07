@@ -148,11 +148,11 @@ void printblock(__global unsigned char* block, size_t len) {
   printf("\n");
 }
 
-// 80-byte hash functions
+// 80-byte hash functions - indexed by odd numbers
 
 // blake_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search1(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -220,7 +220,7 @@ __kernel void search0i(__global unsigned char* block, __global hash_t* hashes)
 
 // bmw_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search3(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -302,7 +302,7 @@ __kernel void search1i(__global unsigned char* block, __global hash_t* hashes)
 
 // groestl_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search5(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -377,7 +377,7 @@ __kernel void search2i(__global unsigned char* block, __global hash_t* hashes)
 
 // jh_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search7(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -451,7 +451,7 @@ __kernel void search3i(__global unsigned char* block, __global hash_t* hashes)
 
 // keccak_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search9(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -517,7 +517,7 @@ __kernel void search4i(__global unsigned char* block, __global hash_t* hashes)
 
 // skein_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search11(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -682,7 +682,7 @@ __kernel void search5i(__global unsigned char* block, __global hash_t* hashes)
 
 // luffa_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search13(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -769,7 +769,7 @@ __kernel void search6i(__global unsigned char* block, __global hash_t* hashes)
 
 // cubehash_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search15(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -852,7 +852,7 @@ __kernel void search7i(__global unsigned char* block, __global hash_t* hashes)
 
 // shavite_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search17(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -949,7 +949,7 @@ __kernel void search8i(__global unsigned char* block, __global hash_t* hashes)
 
 // simd_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search19(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1098,7 +1098,7 @@ __kernel void search9i(__global unsigned char* block, __global hash_t* hashes)
 
 // echo_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search21(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1195,7 +1195,7 @@ __kernel void searchAi(__global unsigned char* block, __global hash_t* hashes)
 
 // hamsi_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search23(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1254,7 +1254,7 @@ __kernel void searchBi(__global unsigned char* block, __global hash_t* hashes)
 
 // fugue_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search25(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1370,7 +1370,7 @@ __kernel void searchCi(__global unsigned char* block, __global hash_t* hashes)
 
 // shabal_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search27(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
@@ -1473,7 +1473,7 @@ __kernel void searchDi(__global unsigned char* block, __global hash_t* hashes)
 
 // whirlpool_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search29(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1587,7 +1587,7 @@ __kernel void searchEi(__global unsigned char* block, __global hash_t* hashes)
 
 // sha512_80
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
+__kernel void search31(__global unsigned char* block, __global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1625,11 +1625,11 @@ __kernel void searchFi(__global unsigned char* block, __global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-// 64-byte hash functions
+// 64-byte hash functions - indexed by even numbers
 
 // blake
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search0(__global hash_t* hashes)
+__kernel void search2(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1688,7 +1688,7 @@ __kernel void search0(__global hash_t* hashes)
 
 // bmw
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search1(__global hash_t* hashes)
+__kernel void search4(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1757,7 +1757,7 @@ __kernel void search1(__global hash_t* hashes)
 
 // groestl
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search2(__global hash_t* hashes)
+__kernel void search6(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1816,7 +1816,7 @@ __kernel void search2(__global hash_t* hashes)
 
 // jh
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search3(__global hash_t* hashes)
+__kernel void search8(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1873,7 +1873,7 @@ __kernel void search3(__global hash_t* hashes)
 
 // keccak
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search4(__global hash_t* hashes)
+__kernel void search10(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1925,7 +1925,7 @@ __kernel void search4(__global hash_t* hashes)
 
 // skein
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search5(__global hash_t* hashes)
+__kernel void search12(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -1966,7 +1966,7 @@ __kernel void search5(__global hash_t* hashes)
 
 // luffa
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search6(__global hash_t* hashes)
+__kernel void search14(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -2042,7 +2042,7 @@ __kernel void search6(__global hash_t* hashes)
 
 // cubehash
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search7(__global hash_t* hashes)
+__kernel void search16(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -2114,7 +2114,7 @@ __kernel void search7(__global hash_t* hashes)
 
 // shavite
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search8(__global hash_t* hashes)
+__kernel void search18(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -2200,7 +2200,7 @@ __kernel void search8(__global hash_t* hashes)
 
 // simd
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void search9(__global hash_t* hashes)
+__kernel void search20(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -2329,7 +2329,7 @@ __kernel void search9(__global hash_t* hashes)
 
 // echo
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchA(__global hash_t* hashes)
+__kernel void search22(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
@@ -2425,7 +2425,7 @@ __kernel void searchA(__global hash_t* hashes)
 
 // hamsi
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchB(__global hash_t* hashes)
+__kernel void search24(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
@@ -2479,7 +2479,7 @@ __kernel void searchB(__global hash_t* hashes)
 
 // fugue
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchC(__global hash_t* hashes)
+__kernel void search26(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
@@ -2596,7 +2596,7 @@ __kernel void searchC(__global hash_t* hashes)
 
 // shabal
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchD(__global hash_t* hashes)
+__kernel void search28(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
@@ -2677,7 +2677,7 @@ __kernel void searchD(__global hash_t* hashes)
 
 // whirlpool
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchE(__global hash_t* hashes)
+__kernel void search30(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     uint offset = get_global_offset(0);
@@ -2777,7 +2777,7 @@ __kernel void searchE(__global hash_t* hashes)
 
 // sha512
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void searchF(__global hash_t* hashes)
+__kernel void search32(__global hash_t* hashes)
 {
     uint gid = get_global_id(0);
     __global hash_t *hash = &(hashes[gid-get_global_offset(0)]);
@@ -2807,8 +2807,9 @@ __kernel void searchF(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
+// output
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
-__kernel void output(__global hash_t* hashes,
+__kernel void search(__global hash_t* hashes,
     __global uint* output, const ulong target)
 {
     uint gid = get_global_id(0);

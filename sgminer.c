@@ -7225,26 +7225,20 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
       evocoin_twisted_code(result, work->pool->swork.ntime, code);
     } else if (work->pool->algorithm.type == ALGO_TIMETRAVEL10) { 
         timetravel10_twisted_code(result, work->pool->swork.ntime, code);
-    }
-    else if (work->pool->algorithm.type == ALGO_X16R) {
-    	  if (work->data) {
+    } else if (work->pool->algorithm.type == ALGO_X16R) {
         x16r_twisted_code((const uint32_t *)work->data, code);
     	  }
-        else {
-          strcpy(code, "0123456789ABCDEF");
-        }
-      }
 
     if (strcmp(code, mythr->curSequence) == 0) {
         algoSwitch = false;
       } else {
+      applog(LOG_NOTICE, "[THR%d] Switching algo order to %s", mythr->id, code);
       strcpy(mythr->curSequence, code);
       }
     }
 
   return ((work->pool->algorithm.type == ALGO_X11EVO ||
-      work->pool->algorithm.type == ALGO_TIMETRAVEL10 ||
-      work->pool->algorithm.type == ALGO_X16R)
+      work->pool->algorithm.type == ALGO_TIMETRAVEL10)
     && (algoSwitch || !mythr->work));
 }
 
