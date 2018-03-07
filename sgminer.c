@@ -180,6 +180,8 @@ double opt_diff_mult = 0.0;
 char *opt_kernel_path;
 char *sgminer_path;
 
+char* opt_benchmark_seq;
+
 #define QUIET (opt_quiet || opt_realquiet)
 
 struct thr_info *control_thr;
@@ -1326,6 +1328,22 @@ char *set_difficulty_multiplier(char *arg)
   return NULL;
 }
 
+char *set_benchmark_sequence(char *arg)
+{
+  if (!(arg && arg[0]))
+    return "Invalid parameter for set benchmark sequence";
+  if (strlen(arg) == 0)
+    return "Benchmark sequence must be non-empty";
+  if (strlen(arg) > 16)
+    return "Benchmark sequence is at most 16 characters";
+  uint i;
+  for (i = 0; i < strlen(arg); i++) {
+    if (!( ('0' <= arg[i] <= '9') || ('A' <= arg[i] <= 'F')))
+      return sprintf("Invalid hex digit %c", arg[i]);
+  }
+  opt_set_charp(arg, &opt_benchmark_seq);
+}
+
 /* These options are available from config file or commandline */
 struct opt_table opt_config_table[] = {
   OPT_WITH_ARG("--algorithm|--kernel|-k",
@@ -1492,6 +1510,11 @@ struct opt_table opt_config_table[] = {
   OPT_WITHOUT_ARG("--luffa-parallel",
       opt_set_bool, &opt_luffa_parallel,
       "Set SPH_LUFFA_PARALLEL for Xn derived algorithms (Can give better hashrate for some GPUs)"),
+  OPT_WITH_ARG("--benchmark-sequence",
+      set_benchmark_sequence, NULL, NULL,
+      "Hardcode the algorithm sequence x16r/x11evo/timetravel"
+      " for benchmarking purposes. Must be an uppercase hex string"
+      "of length 1-16"),
 #ifdef HAVE_CURSES
   OPT_WITHOUT_ARG("--incognito",
       opt_set_bool, &opt_incognito,
@@ -6661,13 +6684,19 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
     char result[100];
     char code[17];
 
-    if (work->pool->algorithm.type == ALGO_X11EVO) {
-      evocoin_twisted_code(result, work->pool->swork.ntime, code);
-    } else if (work->pool->algorithm.type == ALGO_TIMETRAVEL10) {
-      timetravel10_twisted_code(result, work->pool->swork.ntime, code);
-    } else if (work->pool->algorithm.type == ALGO_X16R) {
-      x16r_twisted_code((const uint32_t *)work->data, code);
+    if (opt_benchmark_seq) {
+      strncpy(code, opt_benchmark_seq, 17);
     }
+    else {
+      if (work->pool->algorithm.type == ALGO_X11EVO) {
+        evocoin_twisted_code(result, work->pool->swork.ntime, code);
+      } else if (work->pool->algorithm.type == ALGO_TIMETRAVEL10) {
+        timetravel10_twisted_code(result, work->pool->swork.ntime, code);
+      } else if (work->pool->algorithm.type == ALGO_X16R) {
+        x16r_twisted_code((const uint32_t *)work->data, code);
+      }
+    }
+
 
     if (strcmp(code, mythr->curSequence) == 0) {
       algoSwitch = false;
@@ -8780,11 +8809,18 @@ static void restart_mining_threads(unsigned int new_n_threads)
       thr->id = k;
       thr->pool_no = pool->pool_no;
       // init sequence
-      if (cgpu->algorithm.type == ALGO_X16R) {
-        strcpy(thr->curSequence, DEFAULT_SEQUENCE_16);
+      if (opt_benchmark_seq) {
+        applog(LOG_NOTICE, "[THR%d] Setting benchmark algo order to %s",
+          thr->id, opt_benchmark_seq);
+        strcpy(thr->curSequence, opt_benchmark_seq);
       }
       else {
-        strcpy(thr->curSequence, DEFAULT_SEQUENCE);
+        if (cgpu->algorithm.type == ALGO_X16R) {
+          strcpy(thr->curSequence, DEFAULT_SEQUENCE_16);
+        }
+        else {
+          strcpy(thr->curSequence, DEFAULT_SEQUENCE);
+        }
       }
 
       applog(LOG_DEBUG, "Thread %d set pool = %d (%s)", k, thr->pool_no, isnull(get_pool_name(pools[thr->pool_no]), ""));
