@@ -580,7 +580,7 @@ static cl_int queue_x16r_kernel(struct __clState *clState,
   struct _dev_blk_ctx *blk, __maybe_unused cl_uint threads)
 {
   cl_kernel *kernel;
-  unsigned int num;
+  unsigned int num, i;
   cl_ulong le_target;
   cl_int status = 0;
 
@@ -588,23 +588,24 @@ static cl_int queue_x16r_kernel(struct __clState *clState,
   flip80(clState->cldata, blk->work->data);
   status = clEnqueueWriteBuffer(clState->commandQueue, clState->CLbuffer0, true, 0, 80, clState->cldata, 0, NULL, NULL);
 
+  // output kernel
   kernel = &clState->kernel;
   num = 0;
-  CL_SET_ARG(clState->CLbuffer0);
   CL_SET_ARG(clState->padbuffer8);
-
-  // 15 intermediate 64-byte kernels
-  kernel = clState->extra_kernels;
-  CL_SET_ARG_0(clState->padbuffer8);
-  unsigned int i;
-  for (i = 1; i < 15; ++i) {
-    CL_NEXTKERNEL_SET_ARG_0(clState->padbuffer8);
-  }
-
-  num = 0;
-  CL_NEXTKERNEL_SET_ARG(clState->padbuffer8);
   CL_SET_ARG(clState->outputBuffer);
   CL_SET_ARG(le_target);
+
+  // Individual algos for x16r
+  kernel = clState->extra_kernels;
+  for (i = 0; i < 16; i++) {
+    // 80-byte algo
+    num = 0;
+    CL_SET_ARG(clState->CLbuffer0);
+    CL_SET_ARG(clState->padbuffer8);
+    // 64-byte algo
+    CL_NEXTKERNEL_SET_ARG_0(clState->padbuffer8);
+    kernel++;
+  }
 
   return status;
 }
@@ -764,7 +765,7 @@ static algorithm_settings_t algos[] = {
   { "bitblock", ALGO_X15, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 14, 4 * 16 * 4194304, 0, bitblock_regenhash, queue_bitblock_kernel, gen_hash, append_x13_compiler_options},
   { "bitblockold", ALGO_X15, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 10, 4 * 16 * 4194304, 0, bitblock_regenhash, queue_bitblockold_kernel, gen_hash, append_x13_compiler_options},
 
-  { "x16r", ALGO_X16R, "", 1, 256, 256, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 16, 4 * 16 * 4194304, 0, x16r_regenhash, queue_x16r_kernel, gen_hash, append_x13_compiler_options },
+  { "x16r", ALGO_X16R, "", 1, 256, 256, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 32, 4 * 16 * 4194304, 0, x16r_regenhash, queue_x16r_kernel, gen_hash, append_x13_compiler_options },
 
   { "talkcoin-mod", ALGO_NIST, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 4,  8 * 16 * 4194304, 0, talkcoin_regenhash, queue_talkcoin_mod_kernel, gen_hash, append_x11_compiler_options},
 

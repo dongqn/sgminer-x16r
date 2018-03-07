@@ -1411,23 +1411,66 @@ static int64_t opencl_scanhash(struct thr_info *thr, struct work *work,
     return -1;
   }
 
-    if (clState->goffset)
-        p_global_work_offset = (size_t *)&work->blk.nonce;
+  if (clState->goffset)
+      p_global_work_offset = (size_t *)&work->blk.nonce;
 
-    status = clEnqueueNDRangeKernel(clState->commandQueue, clState->kernel, 1, p_global_work_offset,
+  if (gpu->algorithm.type == ALGO_X16R) {
+    if (strlen(thr->curSequence) != 16) {
+      applog(LOG_ERR, "Error: Current sequence length (%d) is not 16", strlen(thr->curSequence));
+      return -1;
+    }
+    unsigned char idx = thr->curSequence[0];
+    // First 80-byte kernel
+    if (idx >= 'A')
+      idx = 10 + idx - 'A';
+    else
+      idx -= '0';
+    status = clEnqueueNDRangeKernel(clState->commandQueue,
+      clState->extra_kernels[2*idx], 1, p_global_work_offset,
                     globalThreads, localThreads, 0,  NULL, NULL);
-  if (unlikely(status != CL_SUCCESS)) {
-    applog(LOG_ERR, "Error %d: Enqueueing kernel onto command queue. (clEnqueueNDRangeKernel)", status);
-    return -1;
-  }
-
-  for (i = 0; i < clState->n_extra_kernels; i++) {
-      status = clEnqueueNDRangeKernel(clState->commandQueue, clState->extra_kernels[i], 1, p_global_work_offset,
+    if (unlikely(status != CL_SUCCESS)) {
+        applog(LOG_ERR, "Error %d: Enqueueing kernel onto command queue. (clEnqueueNDRangeKernel)", status);
+        return -1;
+    }
+    for (i = 1; i < strlen(thr->curSequence); i++) {
+      idx = thr->curSequence[i];
+      if (idx >= 'A')
+        idx = 10 + idx - 'A';
+      else
+        idx -= '0';
+      status = clEnqueueNDRangeKernel(clState->commandQueue,
+        clState->extra_kernels[2*idx+1], 1, p_global_work_offset,
                       globalThreads, localThreads, 0,  NULL, NULL);
       if (unlikely(status != CL_SUCCESS)) {
           applog(LOG_ERR, "Error %d: Enqueueing kernel onto command queue. (clEnqueueNDRangeKernel)", status);
           return -1;
       }
+    }
+
+    // output kernel
+    status = clEnqueueNDRangeKernel(clState->commandQueue, clState->kernel, 1,
+      p_global_work_offset, globalThreads, localThreads, 0,  NULL, NULL);
+    if (unlikely(status != CL_SUCCESS)) {
+      applog(LOG_ERR, "Error %d: Enqueueing kernel onto command queue. (clEnqueueNDRangeKernel)", status);
+      return -1;
+    }
+  }
+  else {
+    status = clEnqueueNDRangeKernel(clState->commandQueue, clState->kernel, 1, p_global_work_offset,
+      globalThreads, localThreads, 0,  NULL, NULL);
+    if (unlikely(status != CL_SUCCESS)) {
+      applog(LOG_ERR, "Error %d: Enqueueing kernel onto command queue. (clEnqueueNDRangeKernel)", status);
+      return -1;
+    }
+    for (i = 0; i < clState->n_extra_kernels; i++) {
+        status = clEnqueueNDRangeKernel(clState->commandQueue,
+          clState->extra_kernels[i], 1, p_global_work_offset,
+                        globalThreads, localThreads, 0,  NULL, NULL);
+        if (unlikely(status != CL_SUCCESS)) {
+            applog(LOG_ERR, "Error %d: Enqueueing kernel onto command queue. (clEnqueueNDRangeKernel)", status);
+            return -1;
+        }
+    }
   }
 
   status = clEnqueueReadBuffer(clState->commandQueue, clState->outputBuffer, CL_FALSE, 0,

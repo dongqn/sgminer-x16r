@@ -527,21 +527,12 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
   }
 
   // Load kernels
-  applog(LOG_DEBUG, "Initialising kernel %s with%s bitalign, %spatched BFI, nfactor %d, n %d",
+  applog(LOG_NOTICE, "Initialising kernel %s with%s bitalign, %spatched BFI, nfactor %d, n %d",
          filename, clState->hasBitAlign ? "" : "out", build_data->patch_bfi ? "" : "un",
          algorithm->nfactor, algorithm->n);
 
   /* get a kernel object handle for a kernel with the given name */
-  if (algorithm->type == ALGO_X16R) {
-    applog(LOG_NOTICE, "[THR%d] Switching algo order to %s",
-      thr->id, thr->curSequence);
-    char kernel_name[9]; // max: search9i + 0x0
-    snprintf(kernel_name, 9, "search%ci", thr->curSequence[0]);
-    clState->kernel = clCreateKernel(clState->program, kernel_name, &status);
-  }
-  else {
-    clState->kernel = clCreateKernel(clState->program, "search", &status);
-  }
+  clState->kernel = clCreateKernel(clState->program, "search", &status);
   if (status != CL_SUCCESS) {
     applog(LOG_ERR, "Error %d: Creating Kernel from program. (clCreateKernel)", status);
     return NULL;
@@ -553,28 +544,10 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
     unsigned int i;
     char kernel_name[9]; // max: search99 + 0x0
 
-    if (algorithm->type == ALGO_X16R) {
-      if (clState->n_extra_kernels != strlen(thr->curSequence)) {
-        applog(LOG_ERR, "Error: number of kernels (%d) =/= length of algo sequence + 1 (%d)",
-          clState->n_extra_kernels+1, strlen(thr->curSequence)+1);
-        return NULL;
-      }
-    }
-
     clState->extra_kernels = (cl_kernel *)malloc(sizeof(cl_kernel) * clState->n_extra_kernels);
 
     for (i = 0; i < clState->n_extra_kernels; i++) {
-      if (algorithm->type == ALGO_X16R) {
-        if (i < clState->n_extra_kernels-1) {
-          snprintf(kernel_name, 9, "search%c", thr->curSequence[i+1]);
-        }
-        else {
-          strcpy(kernel_name, "output");
-        }
-      }
-      else {
-        snprintf(kernel_name, 9, "search%d", i + 1);
-      }
+      snprintf(kernel_name, 9, "search%d", i + 1);
       clState->extra_kernels[i] = clCreateKernel(clState->program, kernel_name, &status);
       if (status != CL_SUCCESS) {
         applog(LOG_ERR, "Error %d: Creating ExtraKernel #%d from program. (clCreateKernel)", status, i);
