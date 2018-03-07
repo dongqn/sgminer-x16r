@@ -1566,10 +1566,6 @@ static int64_t opencl_scanhash(struct thr_info *thr, struct work *work,
     }
   }
   else if (gpu->algorithm.type == ALGO_X16R) {
-    if (strlen(thr->curSequence) != 16) {
-      applog(LOG_ERR, "Error: Current sequence length (%d) is not 16", strlen(thr->curSequence));
-      return -1;
-    }
     unsigned char idx = thr->curSequence[0];
     // First 80-byte kernel
     if (idx >= 'A')
