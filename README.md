@@ -1,4 +1,4 @@
-# sgminer
+# sgminer-x16r
 
 
 ## Introduction
@@ -6,19 +6,22 @@
 This is a multi-threaded multi-pool GPU miner with ATI GPU monitoring,
 (over)clocking and fanspeed support for scrypt-based cryptocurrency. It is
 based on cgminer by Con Kolivas (ckolivas), which is in turn based on
-cpuminer by Jeff Garzik (jgarzik).
+cpuminer by Jeff Garzik (jgarzik). Brian Lee (brianmct) adapted the miner for the x16r algorithm.
 
-**releases**: https://github.com/sgminer-dev/sgminer/releases
+**releases**: https://github.com/brian112358/sgminer-x16r/releases
 
-**git tree**: https://github.com/sgminer-dev/sgminer
+**git tree**: https://github.com/brian112358/sgminer-x16r
 
-**bugtracker**: https://github.com/sgminer-dev/sgminer/issues
-
-**irc**: `#sgminer` and `#sgminer-dev` on freenode
-
-**mailing lists**: https://sourceforge.net/p/sgminer/mailman/
+**bugtracker**: https://github.com/brian112358/sgminer-x16r/issues
 
 License: GPLv3.  See `COPYING` for details.
+
+## Donation addresses
+
+If you'd like to contribute to the development of this miner, please consider donating to brianmct:
+
+BTC: bc1qreutd3fd6afrm2xt6vzr722msxcfnpca0j8dxl
+RVN: RWoSZX6j6WU6SVTVq5hKmdgPmmrYE9be5R
 
 
 ## Documentation
