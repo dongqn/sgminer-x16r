@@ -18,11 +18,15 @@ License: GPLv3.  See `COPYING` for details.
 
 ## Donation addresses
 
-If you'd like to contribute to the development of this miner, please consider donating to brianmct:
+Please consider supporting this project by donating to these addresses:
 
-**BTC**: bc1qreutd3fd6afrm2xt6vzr722msxcfnpca0j8dxl
+**BTC**: 1FHLroBZaB74QvQW5mBmAxCNVJNXa14mH5
 
 **RVN**: RWoSZX6j6WU6SVTVq5hKmdgPmmrYE9be5R
+
+**ETH**: 0x7255ba772ee18bdb8b9af0bdeae2e41f5874fb0b
+
+**DOGE**: D7h81HeRVV3xPWL9CqCC2Z6AevG4gBdGxZ
 
 
 ## Documentation
