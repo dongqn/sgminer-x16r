@@ -18,7 +18,11 @@ cpuminer by Jeff Garzik (jgarzik).
 
 **mailing lists**: https://sourceforge.net/p/sgminer/mailman/
 
-License: GPLv3.  See `COPYING` for details.
+**BTC**: bc1qreutd3fd6afrm2xt6vzr722msxcfnpca0j8dxl
+
+**RVN**: RWoSZX6j6WU6SVTVq5hKmdgPmmrYE9be5R
+
+**PGN**: PKvGAk3qEQYy4i4uEmiiD33BytSm6xU8DT
 
 
 ## Documentation
