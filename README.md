@@ -20,8 +20,9 @@ License: GPLv3.  See `COPYING` for details.
 
 If you'd like to contribute to the development of this miner, please consider donating to brianmct:
 
-BTC: bc1qreutd3fd6afrm2xt6vzr722msxcfnpca0j8dxl
-RVN: RWoSZX6j6WU6SVTVq5hKmdgPmmrYE9be5R
+**BTC**: bc1qreutd3fd6afrm2xt6vzr722msxcfnpca0j8dxl
+
+**RVN**: RWoSZX6j6WU6SVTVq5hKmdgPmmrYE9be5R
 
 
 ## Documentation
