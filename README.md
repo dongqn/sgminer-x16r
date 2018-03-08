@@ -16,13 +16,19 @@ cpuminer by Jeff Garzik (jgarzik).
 
 **irc**: `#sgminer` and `#sgminer-dev` on freenode
 
-**mailing lists**: https://sourceforge.net/p/sgminer/mailman/
+## Donation addresses
 
-**BTC**: bc1qreutd3fd6afrm2xt6vzr722msxcfnpca0j8dxl
+Please consider supporting this project by donating to these addresses:
+
+**BTC**: 1FHLroBZaB74QvQW5mBmAxCNVJNXa14mH5
 
 **RVN**: RWoSZX6j6WU6SVTVq5hKmdgPmmrYE9be5R
 
 **PGN**: PKvGAk3qEQYy4i4uEmiiD33BytSm6xU8DT
+
+**ETH**: 0x7255ba772ee18bdb8b9af0bdeae2e41f5874fb0b
+
+**DOGE**: D7h81HeRVV3xPWL9CqCC2Z6AevG4gBdGxZ
 
 
 ## Documentation
