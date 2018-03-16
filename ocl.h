@@ -36,6 +36,7 @@ typedef struct __clState {
   cl_uint vwidth;
   int devid;
   int monero_variant;
+  char algo_sequence[17];
   size_t max_work_size;
   size_t wsize;
   size_t compute_shaders;

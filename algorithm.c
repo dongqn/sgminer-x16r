@@ -744,16 +744,26 @@ static cl_int queue_x16r_kernel(struct __clState *clState,
   CL_SET_ARG(clState->outputBuffer);
   CL_SET_ARG(le_target);
 
-  // Individual algos for x16r
-  kernel = clState->extra_kernels;
-  for (i = 0; i < 16; i++) {
-    // 80-byte algo
-    num = 0;
-    CL_SET_ARG(clState->CLbuffer0);
-    CL_SET_ARG(clState->padbuffer8);
-    // 64-byte algo
-    CL_NEXTKERNEL_SET_ARG_0(clState->padbuffer8);
-    kernel++;
+  // First algo is 80-byte
+  unsigned char idx = clState->algo_sequence[0];
+  if (idx >= 'A')
+    idx = 10 + idx - 'A';
+  else
+    idx -= '0';
+  kernel = &clState->extra_kernels[2*idx];
+  num = 0;
+  CL_SET_ARG(clState->CLbuffer0);
+  CL_SET_ARG(clState->padbuffer8);
+
+  // Subsequent algos are 64-byte
+  for (int i = 1; i < 16; i++) {
+    idx = clState->algo_sequence[i];
+    if (idx >= 'A')
+      idx = 10 + idx - 'A';
+    else
+      idx -= '0';
+    kernel = &clState->extra_kernels[2*idx+1];
+    CL_SET_ARG_0(clState->padbuffer8);
   }
 
   return status;

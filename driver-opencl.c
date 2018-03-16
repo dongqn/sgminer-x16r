@@ -1467,6 +1467,7 @@ static int64_t opencl_scanhash(struct thr_info *thr, struct work *work,
     return ret;
   }
 
+  strcpy(clState->algo_sequence, thr->curSequence);
   status = thrdata->queue_kernel_parameters(clState, &work->blk, globalThreads[0]);
   if (unlikely(status != CL_SUCCESS)) {
     if (status > 0)
