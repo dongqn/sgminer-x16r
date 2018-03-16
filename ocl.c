@@ -804,20 +804,9 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
     if (!(clState->program = build_opencl_kernel(build_data, filename, x11EvoCode)))
       return NULL;
 
-      if (save_opencl_kernel(build_data, clState->program)) {
-        /* Program needs to be rebuilt, because the binary was patched */
-        if (build_data->patch_bfi) {
-          clReleaseProgram(clState->program);
-          clState->program = load_opencl_binary_kernel(build_data);
-        }
-      } else {
-        if (build_data->patch_bfi)
-          quit(1, "Could not save kernel to file, but it is necessary to apply BFI patch");
-      }
-
-      // If it doesn't work, oh well, build it again next run
-      save_opencl_kernel(build_data, clState->program);
-    }
+    // If it doesn't work, oh well, build it again next run
+    save_opencl_kernel(build_data, clState->program);
+  }
 
   // Load kernels
   applog(LOG_NOTICE, "Initialising kernel %s with nfactor %d, n %d",

@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "build_kernel.h"
-#include "patch_kernel.h"
 #include "miner.h"
 
 static char *file_contents(const char *filename, int *length)
@@ -72,29 +71,6 @@ void set_base_compiler_options(build_kernel_data *data)
   if (data->opencl_version < 1.1)
     strcat(data->compiler_options, " -D OCL1");
 }
-
-bool needs_bfi_patch(build_kernel_data *data)
-{
-  if (data->has_bit_align &&
-      (data->opencl_version < 1.2) &&
-        (strstr(data->platform, "Cedar") ||
-         strstr(data->platform, "Redwood") ||
-         strstr(data->platform, "Juniper") ||
-         strstr(data->platform, "Cypress" ) ||
-         strstr(data->platform, "Hemlock" ) ||
-         strstr(data->platform, "Caicos" ) ||
-         strstr(data->platform, "Turks" ) ||
-         strstr(data->platform, "Barts" ) ||
-         strstr(data->platform, "Cayman" ) ||
-         strstr(data->platform, "Antilles" ) ||
-         strstr(data->platform, "Wrestler" ) ||
-         strstr(data->platform, "Zacate" ) ||
-         strstr(data->platform, "WinterPark" )))
-    return true;
-  else
-    return false;
-}
-
 
 typedef struct _algorithm_get_settings_t {
 	const char *algo;
