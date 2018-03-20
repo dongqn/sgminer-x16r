@@ -799,7 +799,7 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
 
   // Load program from file or build it if it doesn't exist
   if (!(clState->program = load_opencl_binary_kernel(build_data))) {
-    applog(LOG_NOTICE, "Building binary %s", build_data->binary_filename);
+    applog(LOG_WARNING, "Building binary %s for the first time.\nThis may take several minutes.", build_data->binary_filename);
 
     if (!(clState->program = build_opencl_kernel(build_data, filename, x11EvoCode)))
       return NULL;
