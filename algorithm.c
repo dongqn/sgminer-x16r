@@ -30,6 +30,7 @@
 #include "algorithm/bitblock.h"
 #include "algorithm/x14.h"
 #include "algorithm/x16r.h"
+#include "algorithm/x16s.h"
 #include "algorithm/fresh.h"
 #include "algorithm/whirlcoin.h"
 #include "algorithm/neoscrypt.h"
@@ -1340,6 +1341,7 @@ static algorithm_settings_t algos[] = {
   { "bitblockold", ALGO_X15, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 10, 4 * 16 * 4194304, 0, bitblock_regenhash, NULL, queue_bitblockold_kernel, gen_hash, append_x13_compiler_options },
 
   { "x16r", ALGO_X16R, "", 1, 256, 256, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 32, 4 * 16 * 4194304, 0, x16r_regenhash, NULL, queue_x16r_kernel, gen_hash, append_x13_compiler_options },
+  { "x16s", ALGO_X16S, "x16r", 1, 256, 256, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 32, 4 * 16 * 4194304, 0, x16s_regenhash, NULL, queue_x16r_kernel, gen_hash, append_x13_compiler_options },
 
   { "talkcoin-mod", ALGO_NIST, "", 1, 1, 1, 0, 0, 0xFF, 0xFFFFULL, 0x0000ffffUL, 4,  8 * 16 * 4194304, 0, talkcoin_regenhash, queue_talkcoin_mod_kernel, gen_hash, append_x11_compiler_options},
 

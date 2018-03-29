@@ -1585,7 +1585,7 @@ struct opt_table opt_config_table[] = {
       "Set SPH_LUFFA_PARALLEL for Xn derived algorithms (Can give better hashrate for some GPUs)"),
   OPT_WITH_ARG("--benchmark-sequence",
       set_benchmark_sequence, NULL, NULL,
-      "Hardcode the algorithm sequence x16r/x11evo/timetravel"
+      "Hardcode the algorithm sequence x16r/x16s/x11evo/timetravel"
       " for benchmarking purposes. Must be an uppercase hex string"
       "of length 1-16"),
 #ifdef HAVE_CURSES
@@ -7253,14 +7253,16 @@ static bool checkIfNeedSwitch(struct thr_info *mythr, struct work *work)
           timetravel10_twisted_code(result, work->pool->swork.ntime, code);
         } else if (work->pool->algorithm.type == ALGO_X16R) {
           x16r_twisted_code((const uint32_t *)work->data, code);
+        } else if (work->pool->algorithm.type == ALGO_X16S) {
+          x16s_twisted_code((const uint32_t *)work->data, code);
         }
       }
 
       if (strcmp(code, mythr->curSequence) == 0) {
         algoSwitch = false;
       } else {
-      applog(LOG_NOTICE, "[THR%d] Switching algo order to %s", mythr->id, code);
-      strcpy(mythr->curSequence, code);
+        if (!mythr->id) applog(LOG_NOTICE, "Switching algo order to %s", code);
+        strcpy(mythr->curSequence, code);
       }
     }
 
@@ -9266,8 +9268,7 @@ static void restart_mining_threads(unsigned int new_n_threads)
     }
 
     applog(LOG_DEBUG, "Assign threads for device %d", i);
-    for (j = 0; j < cgpu->threads; ++j, ++k)
-    {
+    for (j = 0; j < cgpu->threads; ++j, ++k) {
       thr = mining_thr[k];
       thr->id = k;
       thr->pool_no = pool->pool_no;
@@ -9278,12 +9279,13 @@ static void restart_mining_threads(unsigned int new_n_threads)
         strcpy(thr->curSequence, opt_benchmark_seq);
       }
       else {
-      if (cgpu->algorithm.type == ALGO_X16R) {
-        strcpy(thr->curSequence, DEFAULT_SEQUENCE_16);
-      }
-      else {
-      strcpy(thr->curSequence, DEFAULT_SEQUENCE);
-      }
+        if (cgpu->algorithm.type == ALGO_X16R ||
+            cgpu->algorithm.type == ALGO_X16S) {
+          strcpy(thr->curSequence, DEFAULT_SEQUENCE_16);
+        }
+        else {
+          strcpy(thr->curSequence, DEFAULT_SEQUENCE);
+        }
       }
 
       applog(LOG_DEBUG, "Thread %d set pool = %d (%s)", k, thr->pool_no, isnull(get_pool_name(pools[thr->pool_no]), ""));

@@ -1566,7 +1566,8 @@ static int64_t opencl_scanhash(struct thr_info *thr, struct work *work,
       }
     }
   }
-  else if (gpu->algorithm.type == ALGO_X16R) {
+  else if ( gpu->algorithm.type == ALGO_X16R ||
+            gpu->algorithm.type == ALGO_X16S) {
     unsigned char idx = thr->curSequence[0];
     // First 80-byte kernel
     if (idx >= 'A')
