@@ -148,7 +148,7 @@ bool scanhash_lyra2z330(struct thr_info *thr, const unsigned char __maybe_unused
 
 		*nonce = ++n;
 		data[19] = (n);
-		lyra2rev2hash(ostate, data);
+		lyra2z330hash(ostate, data);
 		tmp_hash7 = (ostate[7]);
 
 		applog(LOG_INFO, "data7 %08lx",
