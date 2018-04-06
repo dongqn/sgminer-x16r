@@ -38,6 +38,7 @@
 #include "algorithm/pluck.h"
 #include "algorithm/yescrypt.h"
 #include "algorithm/lyra2rev2.h"
+#include "algorithm/lyra2z330.h"
 #include "algorithm/equihash.h"
 #include "algorithm/evocoin.h"
 #include "algorithm/timetravel10.h"
@@ -767,6 +768,127 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
     strcat(build_data->binary_filename, "g");
   }
 
+  // Lyra2z330 TC
+  else if (cgpu->algorithm.type == ALGO_LYRA2Z330 && !cgpu->opt_tc) {
+    size_t glob_thread_count;
+    long max_int;
+    unsigned char type = 0;
+
+    // determine which intensity type to use
+    if (cgpu->rawintensity > 0) {
+      glob_thread_count = cgpu->rawintensity;
+      max_int = glob_thread_count;
+      type = 2;
+    }
+    else if (cgpu->xintensity > 0) {
+      glob_thread_count = clState->compute_shaders * ((cgpu->algorithm.xintensity_shift) ? (1UL << (cgpu->algorithm.xintensity_shift + cgpu->xintensity)) : cgpu->xintensity);
+      max_int = cgpu->xintensity;
+      type = 1;
+    }
+    else {
+      glob_thread_count = 1UL << (cgpu->algorithm.intensity_shift + cgpu->intensity);
+      max_int = ((cgpu->dynamic) ? MAX_INTENSITY : cgpu->intensity);
+    }
+
+    glob_thread_count = ((glob_thread_count < cgpu->work_size) ? cgpu->work_size : glob_thread_count);
+
+    // if TC * scratchbuf size is too big for memory... reduce to max
+    if ((glob_thread_count * LYRA_SCRATCHBUF_SIZE) >= (uint64_t)cgpu->max_alloc) {
+
+      /* Selected intensity will not run on this GPU. Not enough memory.
+      * Adapt the memory setting. */
+      // depending on intensity type used, reduce the intensity until it fits into the GPU max_alloc
+      switch (type) {
+        //raw intensity
+      case 2:
+        while ((glob_thread_count * LYRA_SCRATCHBUF_SIZE) > (uint64_t)cgpu->max_alloc) {
+          --glob_thread_count;
+        }
+
+        max_int = glob_thread_count;
+        cgpu->rawintensity = glob_thread_count;
+        break;
+
+        //x intensity
+      case 1:
+        glob_thread_count = cgpu->max_alloc / LYRA_SCRATCHBUF_SIZE;
+        max_int = glob_thread_count / clState->compute_shaders;
+
+        while (max_int && ((clState->compute_shaders * (1UL << max_int)) > glob_thread_count)) {
+          --max_int;
+        }
+
+        /* Check if max_intensity is >0. */
+        if (max_int < MIN_XINTENSITY) {
+          applog(LOG_ERR, "GPU %d: Max xintensity is below minimum.", gpu);
+          max_int = MIN_XINTENSITY;
+        }
+
+        cgpu->xintensity = max_int;
+        glob_thread_count = clState->compute_shaders * (1UL << max_int);
+        break;
+
+      default:
+        glob_thread_count = cgpu->max_alloc / LYRA_SCRATCHBUF_SIZE;
+        while (max_int && ((1UL << max_int) & glob_thread_count) == 0) {
+          --max_int;
+        }
+
+        /* Check if max_intensity is >0. */
+        if (max_int < MIN_INTENSITY) {
+          applog(LOG_ERR, "GPU %d: Max intensity is below minimum.", gpu);
+          max_int = MIN_INTENSITY;
+        }
+
+        cgpu->intensity = max_int;
+        glob_thread_count = 1UL << max_int;
+        break;
+      }
+    }
+
+    // TC is glob thread count
+    cgpu->thread_concurrency = glob_thread_count;
+
+    applog(LOG_DEBUG, "GPU %d: computing max. global thread count to %u", gpu, (unsigned)(cgpu->thread_concurrency));
+  }
+  else if (!cgpu->opt_tc) {
+    unsigned int sixtyfours;
+
+    sixtyfours = cgpu->max_alloc / 131072 / 64 / (algorithm->n / 1024) - 1;
+    cgpu->thread_concurrency = sixtyfours * 64;
+    if (cgpu->shaders && cgpu->thread_concurrency > cgpu->shaders) {
+      cgpu->thread_concurrency -= cgpu->thread_concurrency % cgpu->shaders;
+
+      if (cgpu->thread_concurrency > cgpu->shaders * 5) {
+        cgpu->thread_concurrency = cgpu->shaders * 5;
+      }
+    }
+    applog(LOG_DEBUG, "GPU %d: selecting thread concurrency of %d", gpu, (int)(cgpu->thread_concurrency));
+  }
+  else {
+    cgpu->thread_concurrency = cgpu->opt_tc;
+  }
+
+  build_data->context = clState->context;
+  build_data->device = &devices[gpu];
+
+  // Build information
+  strcpy(build_data->source_filename, filename);
+  strcpy(build_data->platform, name);
+  strcpy(build_data->sgminer_path, sgminer_path);
+
+  build_data->kernel_path = (*opt_kernel_path) ? opt_kernel_path : NULL;
+  build_data->work_size = clState->wsize;
+  build_data->opencl_version = get_opencl_version(devices[gpu]);
+
+  strcpy(build_data->binary_filename, filename);
+  build_data->binary_filename[strlen(filename) - 3] = 0x00;		// And one NULL terminator, cutting off the .cl suffix.
+  strcat(build_data->binary_filename, pbuff[gpu]);
+
+  if (clState->goffset) {
+    strcat(build_data->binary_filename, "g");
+  }
+
   char x11EvoCode[17];
   x11EvoCode[0] = 0;
 
@@ -1058,6 +1180,32 @@ out:
       }
     }
     else if (algorithm->type == ALGO_LYRA2REV2) {
+      // need additionnal buffers
+      clState->buffer1 = clCreateBuffer(clState->context, CL_MEM_READ_WRITE, buf1size, NULL, &status);
+      if (status != CL_SUCCESS && !clState->buffer1) {
+        applog(LOG_DEBUG, "Error %d: clCreateBuffer (buffer1), decrease TC or increase LG", status);
+        return NULL;
+      }
+    }
+    else {
+      clState->buffer1 = clCreateBuffer(clState->context, CL_MEM_READ_WRITE, bufsize, NULL, &status); // we don't need that much just tired...
+      if (status != CL_SUCCESS && !clState->buffer1) {
+        applog(LOG_DEBUG, "Error %d: clCreateBuffer (buffer1), decrease TC or increase LG", status);
+        return NULL;
+      }
+    }
+
+    /* This buffer is weird and might work to some degree even if
+     * the create buffer call has apparently failed, so check if we
+     * get anything back before we call it a failure. */
+    clState->padbuffer8 = clCreateBuffer(clState->context, CL_MEM_READ_WRITE, bufsize, NULL, &status);
+    if (status != CL_SUCCESS && !clState->padbuffer8) {
+      applog(LOG_ERR, "Error %d: clCreateBuffer (padbuffer8), decrease TC or increase LG", status);
+      return NULL;
+    }
+  }
+
+	else if (algorithm->type == ALGO_LYRA2Z330) {
       // need additionnal buffers
       clState->buffer1 = clCreateBuffer(clState->context, CL_MEM_READ_WRITE, buf1size, NULL, &status);
       if (status != CL_SUCCESS && !clState->buffer1) {
