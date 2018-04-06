@@ -1,18 +1,11 @@
 #ifndef LYRA2Z330_H
 #define LYRA2Z330_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "miner.h"
+#define LYRA_SCRATCHBUF_SIZE (1536) // matrix size [12][4][4] uint64_t or equivalent
+#define LYRA_SECBUF_SIZE (4) // (not used)
+extern int lyra2z330_test(unsigned char *pdata, const unsigned char *ptarget,
+			uint32_t nonce);
+extern void lyra2z330_regenhash(struct work *work);
 
-#include <stdint.h>
-
-void lyra2z330_hash(const char* input, char* output, uint32_t len);
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
-
+#endif /* LYRA2Z330_H */
