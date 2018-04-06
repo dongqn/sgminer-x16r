@@ -1132,6 +1132,18 @@ out:
 
       applog(LOG_DEBUG, "lyra2REv2 buffer sizes: %lu RW, %lu RW", (unsigned long)bufsize, (unsigned long)buf1size);
       // scrypt/n-scrypt
+      }
+    else if (algorithm->type == ALGO_LYRA2Z330) {
+      /* The scratch/pad-buffer needs 32kBytes memory per thread. */
+      bufsize = LYRA_SCRATCHBUF_SIZE * cgpu->thread_concurrency;
+      buf1size = 4* 8 * cgpu->thread_concurrency; //matrix
+
+      /* This is the input buffer. For yescrypt this is guaranteed to be
+      * 80 bytes only. */
+      readbufsize = 80;
+
+      applog(LOG_DEBUG, "lyra2z330 buffer sizes: %lu RW, %lu RW", (unsigned long)bufsize, (unsigned long)buf1size);
+      // scrypt/n-scrypt
     }
     else {
       size_t ipt = (algorithm->n / cgpu->lookup_gap + (algorithm->n % cgpu->lookup_gap > 0));
